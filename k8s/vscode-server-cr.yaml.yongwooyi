@@ -1,0 +1,33 @@
+apiVersion: amdev.cloriver.io/v1
+kind: IdeConfig
+metadata:
+  name: vscode-server
+spec:
+  userName: "himang10"
+  serviceTypes:
+    - vscode
+    - webssh
+  webssh:
+    permission:
+      useType: "create"
+      role: "architect"
+      scope: "cluster"
+  vscode:
+    git:
+      id: "yongwooyi"
+      token: "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"
+      repository: "https://github.com/yongwooyi/ide-test-code.git"
+  portList:
+    - name: "http"
+      protocol: "TCP"
+      port: 8080
+      targetPort: 8080
+    - name: "mgmt"
+      protocol: "TCP"
+      port: 9090
+      targetPort: 9090  
+  infrastructureSize:
+    cpu: "200m"
+    memory: "512Mi"
+    disk: "20Gi"
+  replicas: 1

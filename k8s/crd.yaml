@@ -1,0 +1,104 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: ideconfigs.amdev.cloriver.io
+spec:
+  group: amdev.cloriver.io
+  versions:
+  - name: v1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties: 
+              userName:
+                type: string
+              serviceTypes:
+                type: array
+                items:
+                  type: string
+                  enum:
+                  - vscode
+                  - webssh
+              vscode:
+                type: object
+                properties:
+                  git:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      token:
+                        type: string
+                      repository:
+                        type: string
+                      branch:
+                        type: string
+              webssh:
+                type: object
+                properties:
+                  permission:
+                    type: object
+                    properties:
+                      useType:
+                        type: string
+                        enum: 
+                          - create
+                          - use
+                      role:
+                        type: string
+                        enum:
+                          - administrator
+                          - architect
+                          - developer
+                          - coder
+                      scope:
+                        type: string
+                        enum:
+                          - namespace
+                          - cluster
+                      serviceAccountName:
+                        type: string
+                    x-kubernetes-preserve-unknown-fields: true
+
+              portList:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    protocol:
+                      type: string
+                    port:
+                      type: integer
+                    targetPort:
+                      type: integer
+              infrastructureSize:
+                type: object
+                properties:
+                  cpu:
+                    type: string
+                  memory:
+                    type: string
+                  disk:
+                    type: string
+              replicas:
+                type: integer
+            required:
+            - userName
+            - serviceTypes
+            - infrastructureSize
+            - portList
+  scope: Namespaced
+  names:
+    kind: IdeConfig
+    plural: ideconfigs
+    singular: ideconfig
+    shortNames:
+    - ic
+

@@ -1,0 +1,22 @@
+server:
+  port: 8080
+logging:
+  level:
+    ROOT: INFO
+
+ide:
+  comdev:
+    pvcName: com-dev-pvc
+  user:
+    storageClassName: gp2
+  vscode:
+    image: "amdp-registry.skamdp.org/mydev-ywyi/amdp-vscode-server:1.0"
+  sshserver:
+    image: "amdp-registry.skamdp.org/mydev-ywyi/ssh-with-k9s-extend:1.0"
+    clusterRole:
+      admin: "cluster-admin"
+      view: "view"
+  wetty:
+    image: "amdp-registry.skamdp.org/mydev-ywyi/wetty-with-k9s:1.1"
+
+

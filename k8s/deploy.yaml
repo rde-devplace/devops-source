@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ide-operator
+  labels:
+    app: ide-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ide-operator
+  template:
+    metadata:
+      annotations: 
+        configmap-version: "2311231116"
+      labels:
+        app: ide-operator
+    spec:
+      serviceAccountName: cluster-admin-sa
+      containers:
+        - name: ide-operator-container
+          image: amdp-registry.skamdp.org/mydev-ywyi/ide-operator:1.0
+          imagePullPolicy: Always
+          securityContext:
+            runAsUser: 0
+            privileged: true
+
+
+
