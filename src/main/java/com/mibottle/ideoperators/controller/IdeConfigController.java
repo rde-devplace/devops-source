@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/ideConfig")
+@RequestMapping("/api/ideconfig")
 public class IdeConfigController {
 
     @Autowired

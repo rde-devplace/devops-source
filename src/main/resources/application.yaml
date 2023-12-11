@@ -4,6 +4,17 @@ logging:
   level:
     ROOT: INFO
 
+spring:
+  profiles:
+    active: local
+  application:
+    name: ide-operator
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
 ide:
   comdev:
     pvcName: com-dev-pvc
@@ -13,10 +24,24 @@ ide:
     image: "amdp-registry.skamdp.org/mydev-ywyi/amdp-vscode-server:1.0"
   sshserver:
     image: "amdp-registry.skamdp.org/mydev-ywyi/ssh-with-k9s-extend:1.0"
-    clusterRole:
-      admin: "cluster-admin"
-      view: "view"
   wetty:
     image: "amdp-registry.skamdp.org/mydev-ywyi/wetty-with-k9s:1.1"
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+ide:
+  comdev:
+    pvcName: ${COMDEV_PVC_NAME}
+  user:
+    storageClassName: ${USER_STORAGE_CLASS_NAME}
+  vscode:
+    image: ${VSCODE_IMAGE_PATH}
+  sshserver:
+    image: ${SSHSERVER_IMAGE_PATH}
+  wetty:
+    image: ${WETTY_IMAGE_PATH}
 
 

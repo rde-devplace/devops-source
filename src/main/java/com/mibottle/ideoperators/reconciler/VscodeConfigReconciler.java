@@ -51,16 +51,16 @@ public class VscodeConfigReconciler
     @Autowired
     private IdeResourceService ideResourceService;
 
-    @Value("${ide.vscode.image:amdp-registry.skamdp.org/mydev-ywyi/amdp-vscode-server:1.0}")
+    @Value("${ide.vscode.image}")
     private String vscodeImage;
-    @Value("${ide.sshserver.image:amdp-registry.skamdp.org/mydev-ywyi/ssh-with-k9s-extend:1.0}")
+    @Value("${ide.sshserver.image}")
     private String sshServerImage;
-    @Value("${ide.wetty.image:amdp-registry.skamdp.org/mydev-ywyi/wetty-with-k9s:1.1}")
+    @Value("${ide.wetty.image}")
     private String wettyImage;
-    @Value("${ide.comdev.pvcName:com-dev-pvc}")
+    @Value("${ide.comdev.pvcName}")
     private String comDevPvc;
 
-    @Value("${ide.user.storageClassName:gp2}")
+    @Value("${ide.user.storageClassName}")
     private String storageClassNameForUser;
 
     public VscodeConfigReconciler(KubernetesClient client, IdeResourceGenerator ideResourceGenerator) {
@@ -209,7 +209,7 @@ public class VscodeConfigReconciler
             if(isVscode && isGit ) {
                 ideResourceService.deleteSecret(resource, namespace);
             }
-            
+
             if(isWebssh && isWebsshCreate) {
                 ideResourceService.deleteRoleBinding(resource, namespace);
                 ideResourceService.deleteServiceAccount(resource, namespace);

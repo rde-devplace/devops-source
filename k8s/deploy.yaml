@@ -2,8 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ide-operator
-  labels:
-    app: ide-operator
 spec:
   replicas: 1
   selector:
@@ -11,19 +9,32 @@ spec:
       app: ide-operator
   template:
     metadata:
-      annotations: 
-        configmap-version: "2311231116"
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '8081'
+        prometheus.io/path: '/actuator/prometheus'
+        update: a0037004cf7a2d2829a26bffeecfda9c
       labels:
         app: ide-operator
     spec:
       serviceAccountName: cluster-admin-sa
+      imagePullSecrets:
+      - name: harbor-registry-secret
       containers:
-        - name: ide-operator-container
-          image: amdp-registry.skamdp.org/mydev-ywyi/ide-operator:1.0
-          imagePullPolicy: Always
-          securityContext:
+      - name: ide-operator
+        image: amdp-registry.skamdp.org/mydev-ywyi/ide-operator:1.0.0
+        imagePullPolicy: Always
+        securityContext:
             runAsUser: 0
             privileged: true
-
-
-
+        env:
+        - name: COMDEV_PVC_NAME
+          value: "com-dev-pvc"
+        - name: USER_STORAGE_CLASS_NAME
+          value: "gp2"
+        - name: VSCODE_IMAGE_PATH
+          value: "amdp-registry.skamdp.org/mydev-ywyi/amdp-vscode-server:1.0"
+        - name: SSHSERVER_IMAGE_PATH
+          value: "amdp-registry.skamdp.org/mydev-ywyi/ssh-with-k9s-extend:1.0"
+        - name: WETTY_IMAGE_PATH
+          value: "amdp-registry.skamdp.org/mydev-ywyi/wetty-with-k9s:1.0"
