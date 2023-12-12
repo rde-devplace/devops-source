@@ -9,7 +9,9 @@ import io.fabric8.kubernetes.client.dsl.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 
 @Service
@@ -65,4 +67,50 @@ public class IdeConfigService {
 
         return ideConfig;
     }
+
+    private List<IdeConfig> fetchIdeConfigs(String namespace) {
+        NonNamespaceOperation<IdeConfig, IdeConfigList, Resource<IdeConfig>> ideConfigs =
+                client.resources(IdeConfig.class, IdeConfigList.class).inNamespace(namespace);
+
+        return ideConfigs.list().getItems();
+    }
+
+    public List<IdeConfigSpec> getIdeConfigs(String namespace) {
+        List<IdeConfig> configs = fetchIdeConfigs(namespace);
+
+        List<IdeConfigSpec> specList = new ArrayList<>();
+        if (configs.isEmpty()) {
+            log.info("No IdeConfigs found in namespace: " + namespace);
+        } else {
+            for (IdeConfig config : configs) {
+                IdeConfigSpec spec = config.getSpec();
+                if (spec != null) {
+                    specList.add(spec);
+                    log.info("Found IdeConfig: " + config.getMetadata());
+                }
+            }
+        }
+
+        return specList;
+    }
+
+    public List<IdeConfigSpec> getIdeConfig(String namespace, String ideConfigName) {
+        List<IdeConfig> configs = fetchIdeConfigs(namespace);
+
+        List<IdeConfigSpec> matchingSpecs = new ArrayList<>();
+        if (configs.isEmpty()) {
+            log.info("No IdeConfigs found in namespace: " + namespace);
+        } else {
+            for (IdeConfig config : configs) {
+                IdeConfigSpec spec = config.getSpec();
+                if (spec != null && ideConfigName.equals(spec.getUserName())) {
+                    matchingSpecs.add(spec);
+                    log.info("Found matching IdeConfig: " + config.getMetadata());
+                }
+            }
+        }
+
+        return matchingSpecs;
+    }
+
 }
