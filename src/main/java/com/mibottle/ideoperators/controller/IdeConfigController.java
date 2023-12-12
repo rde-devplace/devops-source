@@ -1,5 +1,6 @@
 package com.mibottle.ideoperators.controller;
 
+import com.mibottle.ideoperators.customresource.IdeConfig;
 import com.mibottle.ideoperators.customresource.IdeConfigSpec;
 import com.mibottle.ideoperators.service.IdeConfigService;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +40,30 @@ public class IdeConfigController {
         }
     }
 
+    @GetMapping("/ide")
+    public ResponseEntity<?> getIdeConfigs(@RequestParam String namespace, @RequestParam(required = false) String name) {
+        try {
+            if (name != null && !name.isEmpty()) {
+                log.debug("Controller getIdeConfig(): Fetching IdeConfig with name: " + name + " in namespace: " + namespace);
+                List<IdeConfig> matchingConfigs = ideConfigService.getIdeConfig(namespace, name);
 
+                if (matchingConfigs.isEmpty()) {
+                    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                }
+
+                return new ResponseEntity<>(matchingConfigs.get(0), HttpStatus.OK);
+            } else {
+                log.debug("Controller getIdeConfigs(): Fetching IdeConfigs in namespace: " + namespace);
+                List<IdeConfig> configs = ideConfigService.getIdeConfigs(namespace);
+                return new ResponseEntity<>(configs, HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            log.error("Error fetching IdeConfigs", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /*
     @GetMapping("/ide")
     public ResponseEntity<?> getIdeConfigs(@RequestParam String namespace, @RequestParam(required = false) String name) {
         try {
@@ -62,5 +86,7 @@ public class IdeConfigController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+     */
 }
 

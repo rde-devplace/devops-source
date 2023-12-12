@@ -75,7 +75,46 @@ public class IdeConfigService {
         return ideConfigs.list().getItems();
     }
 
-    public List<IdeConfigSpec> getIdeConfigs(String namespace) {
+    public List<IdeConfig> getIdeConfigs(String namespace) {
+        List<IdeConfig> configs = fetchIdeConfigs(namespace);
+
+        List<IdeConfig> configList = new ArrayList<>();
+        if (configs.isEmpty()) {
+            log.info("No IdeConfigs found in namespace: " + namespace);
+        } else {
+            for (IdeConfig config : configs) {
+                if (config != null) {
+                    configList.add(config);
+                    log.info("Found IdeConfig: " + config.getMetadata());
+                }
+            }
+        }
+
+        return configList;
+    }
+
+    public List<IdeConfig> getIdeConfig(String namespace, String ideConfigName) {
+        List<IdeConfig> configs = fetchIdeConfigs(namespace);
+        List<IdeConfig> matchingConfig = new ArrayList<>();
+
+        if (configs.isEmpty()) {
+            log.info("No IdeConfigs found in namespace: " + namespace);
+        } else {
+            for (IdeConfig config : configs) {
+                if (config != null && ideConfigName.equals(config.getSpec().getUserName())) {
+                    matchingConfig.add(config);
+                    log.info("Found matching IdeConfig: " + config.getMetadata());
+                }
+            }
+        }
+
+        return matchingConfig;
+    }
+
+
+    /*
+
+        public List<IdeConfigSpec> getIdeConfigs(String namespace) {
         List<IdeConfig> configs = fetchIdeConfigs(namespace);
 
         List<IdeConfigSpec> specList = new ArrayList<>();
@@ -112,5 +151,7 @@ public class IdeConfigService {
 
         return matchingSpecs;
     }
+
+     */
 
 }
