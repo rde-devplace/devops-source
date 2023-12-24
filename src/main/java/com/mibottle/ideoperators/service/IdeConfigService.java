@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -110,6 +111,63 @@ public class IdeConfigService {
 
         return matchingConfig;
     }
+
+
+    // updateIdeConfig 메소드 추가
+    public Optional<IdeConfig> updateIdeConfig(String namespace, String ideConfigName, IdeConfigSpec ideConfigSpec) {
+        log.info("Updating IdeConfig: " + ideConfigName + " in namespace: " + namespace);
+        NonNamespaceOperation<IdeConfig, IdeConfigList, Resource<IdeConfig>> ideConfigs =
+                client.resources(IdeConfig.class, IdeConfigList.class).inNamespace(namespace);
+
+        Resource<IdeConfig> ideConfigResource = ideConfigs.withName(ideConfigName);
+        IdeConfig existingIdeConfig = ideConfigResource.get();
+        if (existingIdeConfig == null) {
+            log.warn("IdeConfig not found: " + ideConfigName + " in namespace: " + namespace);
+            return Optional.empty();
+        }
+
+        // 업데이트할 IdeConfigSpec의 null이 아닌 필드만 적용
+        IdeConfigSpec configSpec = applyNonNullFields(existingIdeConfig.getSpec(), ideConfigSpec);
+
+        // Kubernetes 클라이언트를 사용하여 업데이트
+        ideConfigResource.edit(c -> {
+            c.setSpec(configSpec);
+            return c;
+        });
+
+        log.info("IdeConfig updated successfully: " + ideConfigName);
+        return Optional.ofNullable(ideConfigResource.get());
+    }
+
+    // null이 아닌 필드만 적용하는 메소드
+    private IdeConfigSpec applyNonNullFields(IdeConfigSpec existingSpec, IdeConfigSpec newSpec) {
+        if (newSpec.getUserName() != null) {
+            existingSpec.setUserName(newSpec.getUserName());
+        }
+        if (newSpec.getServiceTypes() != null && !newSpec.getServiceTypes().isEmpty()) {
+            existingSpec.setServiceTypes(newSpec.getServiceTypes());
+        }
+
+        if(newSpec.getVscode() != null) {
+            existingSpec.setVscode(newSpec.getVscode());
+        }
+        if(newSpec.getWebssh() != null) {
+            existingSpec.setWebssh(newSpec.getWebssh());
+        }
+        if(newSpec.getPortList() != null && !newSpec.getPortList().isEmpty()) {
+            existingSpec.setPortList(newSpec.getPortList());
+        }
+        if(newSpec.getInfrastructureSize() != null) {
+            existingSpec.setInfrastructureSize(newSpec.getInfrastructureSize());
+        }
+
+        if(newSpec.getReplicas() > 0 ) {
+            existingSpec.setReplicas(newSpec.getReplicas());
+        }
+
+        return existingSpec;
+    }
+
 
 
     /*

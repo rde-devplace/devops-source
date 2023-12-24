@@ -21,6 +21,8 @@ public final class IdeCommon {
     public static final String IDECONFIG_CRD_NAME = "ideconfigs.amdev.cloriver.io";
     public static final String IDECONFIG_CRD_PLURAL = "ideconfigs";
 
+    public static final String IDECONFIG_POSTFIX = "-vscode-server";
+
     //Git configuration
     public static final String GIT_ID = "id";
     public static final String GIT_TOKEN = "token";

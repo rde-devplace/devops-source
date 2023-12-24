@@ -28,6 +28,9 @@ ide:
     image: "amdp-registry.skamdp.org/mydev-ywyi/wetty-with-k9s:1.1"
 
 ---
+logging:
+  level:
+    ROOT: ${LOGGING_LEVEL}
 spring:
   config:
     activate:

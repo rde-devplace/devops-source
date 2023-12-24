@@ -28,6 +28,8 @@ spec:
             runAsUser: 0
             privileged: true
         env:
+        - name: LOGGING_LEVEL
+          value: ${LOGGING_LEVEL}
         - name: COMDEV_PVC_NAME
           value: "com-dev-pvc"
         - name: USER_STORAGE_CLASS_NAME

@@ -2,6 +2,7 @@ package com.mibottle.ideoperators.controller;
 
 import com.mibottle.ideoperators.customresource.IdeConfig;
 import com.mibottle.ideoperators.customresource.IdeConfigSpec;
+import com.mibottle.ideoperators.model.IdeCommon;
 import com.mibottle.ideoperators.service.IdeConfigService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,24 +14,24 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/ideconfig")
+@RequestMapping("/api/ide-configs")
 public class IdeConfigController {
 
     @Autowired
     private IdeConfigService ideConfigService;
 
-    @PostMapping("/ide")
+    @PostMapping("/custom-resource")
     public ResponseEntity<String> createIdeConfig(@RequestParam String name, @RequestParam String namespace, @RequestBody IdeConfigSpec ideConfigSpec) {
         try {
             log.info("Controller createIdeConfig(): " + ideConfigSpec.toString());
-            ideConfigService.createIdeConfig(namespace, name + "-vscode-server", ideConfigSpec);
+            ideConfigService.createIdeConfig(namespace, name + IdeCommon.IDECONFIG_POSTFIX, ideConfigSpec);
             return new ResponseEntity<>("IdeConfig created successfully.", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @DeleteMapping("/ide")
+    @DeleteMapping("/custom-resource")
     public ResponseEntity<String> deleteIdeConfig(@RequestParam String name, @RequestParam String namespace) {
         try {
             ideConfigService.deleteIdeConfig(namespace, name + "-vscode-server");
@@ -40,7 +41,7 @@ public class IdeConfigController {
         }
     }
 
-    @GetMapping("/ide")
+    @GetMapping("/custom-resource")
     public ResponseEntity<?> getIdeConfigs(@RequestParam String namespace, @RequestParam(required = false) String name) {
         try {
             if (name != null && !name.isEmpty()) {
@@ -63,30 +64,31 @@ public class IdeConfigController {
         }
     }
 
-    /*
-    @GetMapping("/ide")
-    public ResponseEntity<?> getIdeConfigs(@RequestParam String namespace, @RequestParam(required = false) String name) {
+    @GetMapping("/custom-resource/spec")
+    public ResponseEntity<?> getIdeConfigSpec(@RequestParam String namespace, @RequestParam String name) {
         try {
-            if (name != null && !name.isEmpty()) {
-                log.info("Controller getIdeConfig(): Fetching IdeConfig with name: " + name + " in namespace: " + namespace);
-                List<IdeConfigSpec> matchingConfigs = ideConfigService.getIdeConfig(namespace, name);
-
-                if (matchingConfigs.isEmpty()) {
-                    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-                }
-
-                return new ResponseEntity<>(matchingConfigs.get(0), HttpStatus.OK);
-            } else {
-                log.info("Controller getIdeConfigs(): Fetching IdeConfigs in namespace: " + namespace);
-                List<IdeConfigSpec> configs = ideConfigService.getIdeConfigs(namespace);
-                return new ResponseEntity<>(configs, HttpStatus.OK);
-            }
+            log.debug("Controller getIdeConfigSpec(): Fetching IdeConfigSpec with name: " + name + " in namespace: " + namespace);
+            List<IdeConfig> ideConfigs = ideConfigService.getIdeConfig(namespace, name);
+            return new ResponseEntity<>(ideConfigs.get(0).getSpec(), HttpStatus.OK);
         } catch (Exception e) {
-            log.error("Error fetching IdeConfigs", e);
+            log.error("Error fetching IdeConfigSpec", e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-     */
+    @PutMapping("/custom-resource")
+    public ResponseEntity<String> updateIdeConfig(
+            @RequestParam String name,
+            @RequestParam String namespace,
+            @RequestBody IdeConfigSpec ideConfigSpec) {
+        try {
+            log.info("Controller updateIdeConfig(): Updating IdeConfig with name: " + name + " in namespace: " + namespace);
+            ideConfigService.updateIdeConfig(namespace, name + IdeCommon.IDECONFIG_POSTFIX, ideConfigSpec);
+            return new ResponseEntity<>("IdeConfig updated successfully.", HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error updating IdeConfig", e);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
 

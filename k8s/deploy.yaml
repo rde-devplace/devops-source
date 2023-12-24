@@ -13,7 +13,7 @@ spec:
         prometheus.io/scrape: 'true'
         prometheus.io/port: '8081'
         prometheus.io/path: '/actuator/prometheus'
-        update: 5eb7f9b3417af98913ec79820a6cc407
+        update: 168c7ea07ff843e6712c857dcd753b8c
       labels:
         app: ide-operator
     spec:
@@ -28,6 +28,8 @@ spec:
             runAsUser: 0
             privileged: true
         env:
+        - name: LOGGING_LEVEL
+          value: DEBUG
         - name: COMDEV_PVC_NAME
           value: "com-dev-pvc"
         - name: USER_STORAGE_CLASS_NAME
