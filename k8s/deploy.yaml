@@ -13,7 +13,7 @@ spec:
         prometheus.io/scrape: 'true'
         prometheus.io/port: '8081'
         prometheus.io/path: '/actuator/prometheus'
-        update: 168c7ea07ff843e6712c857dcd753b8c
+        update: dbe04d6ca54b61f457ea96b7023f61d8
       labels:
         app: ide-operator
     spec:

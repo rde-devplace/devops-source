@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -52,7 +53,8 @@ public class IdeConfigController {
                     return new ResponseEntity<>(HttpStatus.NOT_FOUND);
                 }
 
-                return new ResponseEntity<>(matchingConfigs.get(0), HttpStatus.OK);
+                //return new ResponseEntity<>(matchingConfigs.get(0), HttpStatus.OK);
+                return new ResponseEntity<>(matchingConfigs, HttpStatus.OK);
             } else {
                 log.debug("Controller getIdeConfigs(): Fetching IdeConfigs in namespace: " + namespace);
                 List<IdeConfig> configs = ideConfigService.getIdeConfigs(namespace);
@@ -64,12 +66,19 @@ public class IdeConfigController {
         }
     }
 
+
     @GetMapping("/custom-resource/spec")
     public ResponseEntity<?> getIdeConfigSpec(@RequestParam String namespace, @RequestParam String name) {
         try {
             log.debug("Controller getIdeConfigSpec(): Fetching IdeConfigSpec with name: " + name + " in namespace: " + namespace);
             List<IdeConfig> ideConfigs = ideConfigService.getIdeConfig(namespace, name);
-            return new ResponseEntity<>(ideConfigs.get(0).getSpec(), HttpStatus.OK);
+
+            // 모든 ideConfigs 요소에 대해 getSpec()을 호출하여 specList에 추가
+            List<IdeConfigSpec> specList = ideConfigs.stream()
+                    .map(IdeConfig::getSpec)
+                    .collect(Collectors.toList());
+
+            return new ResponseEntity<>(specList, HttpStatus.OK);
         } catch (Exception e) {
             log.error("Error fetching IdeConfigSpec", e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
