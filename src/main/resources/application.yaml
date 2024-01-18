@@ -10,6 +10,13 @@ spring:
   application:
     name: ide-operator
 
+springdoc:
+  api-docs:
+    path: /api-docs
+    title: Devplace manager API
+    description: This Application create and manage ide config.
+  swagger-ui:
+    path: /swagger-ui.html
 ---
 spring:
   config:
@@ -35,6 +42,8 @@ spring:
   config:
     activate:
       on-profile: prod
+server:
+  port: 8080
 ide:
   comdev:
     pvcName: ${COMDEV_PVC_NAME}
