@@ -1,7 +1,7 @@
 apiVersion: amdev.cloriver.io/v1
 kind: IdeConfig
 metadata:
-  name: ide-admin-vscode-server
+  name: ide-user-vscode-server
   namespace: part-rde
 spec:
   userName: "ide-user"

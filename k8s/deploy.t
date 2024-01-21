@@ -35,7 +35,7 @@ spec:
         - name: USER_STORAGE_CLASS_NAME
           value: "gp2"
         - name: VSCODE_IMAGE_PATH
-          value: "${DOCKER_REGISTRY}/amdp-vscode-server:1.0"
+          value: "${DOCKER_REGISTRY}/amdp-vscode-server:2.0"
         - name: SSHSERVER_IMAGE_PATH
           value: "${DOCKER_REGISTRY}/ssh-with-k9s-extend:1.0"
         - name: WETTY_IMAGE_PATH
