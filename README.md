@@ -15,3 +15,12 @@ Remote Development Environment(RDE)는 개발 환경을 개발자의 로컬 PC�
 
 상세 설명은 아래와 같다.
 [Remote Development Environment](https://github.com/rde-devplace/devplace-frontend)
+
+## What is Developr Workplace Operator?
+devplace-operator는 Kubernetes 환경에서 Remote Development Environment(RDE)를 구성하기 위한 Operator입니다. 
+이 operator는 JAVA OPERATOR SDK를 기반으로 개발되었습니다. [JAVA OPERATOR SDK](https://javaoperatorsdk.io/)
+
+CRD (Custom Resource Definition)를 통해 Remote Development Environment(RDE)를 구성하고, Operator는 CRD를 감지하여 RDE를 구성하고, 관리합니다.
+CR (Custom Resource)는 Kubernetes API에 새로운 리소스 타입을 정의하고, 이를 통해 새로운 리소스를 생성하고 관리할 수 있습니다.
+
+
