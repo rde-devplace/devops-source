@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: ${IMAGE_NAME}-service
+  namespace: ${NAMESPACE}
 spec:
   selector:
     app: ${IMAGE_NAME}

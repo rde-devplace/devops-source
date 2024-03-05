@@ -28,7 +28,7 @@ ide:
   user:
     storageClassName: gp2
   vscode:
-    image: "amdp-registry.skamdp.org/mydev-ywyi/amdp-vscode-server:2.0"
+    image: "amdp-registry.skamdp.org/mydev-ywyi/amdp-vscode-server:2.1"
   sshserver:
     image: "amdp-registry.skamdp.org/mydev-ywyi/ssh-with-k9s-extend:1.0"
   wetty:
@@ -55,5 +55,6 @@ ide:
     image: ${SSHSERVER_IMAGE_PATH}
   wetty:
     image: ${WETTY_IMAGE_PATH}
-
+  notebook:
+    image: ${NOTEBOOK_IMAGE_PATH}
 
