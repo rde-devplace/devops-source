@@ -14,7 +14,7 @@ spec:
         prometheus.io/scrape: 'true'
         prometheus.io/port: '8081'
         prometheus.io/path: '/actuator/prometheus'
-        update: 4199f9b1b3c9de927c23bd931ecf249e
+        update: ea8fb826360b7a43eba8b2ac4edc379d
       labels:
         app: ide-operator
     spec:
@@ -23,7 +23,7 @@ spec:
       - name: harbor-registry-secret
       containers:
       - name: ide-operator
-        image: amdp-registry.skamdp.org/mydev-ywyi/ide-operator:1.0.0
+        image: amdp-registry.skamdp.org/mydev-ywyi/ide-operator:1.0.2
         imagePullPolicy: Always
         securityContext:
             runAsUser: 0
@@ -42,4 +42,4 @@ spec:
         - name: WETTY_IMAGE_PATH
           value: "amdp-registry.skamdp.org/mydev-ywyi/wetty-with-k9s:1.0"
         - name: NOTEBOOK_IMAGE_PATH
-          value: "amdp-registry.skamdp.org/mydev-ywyi/devplace-notebook:1.0.8"
+          value: "amdp-registry.skamdp.org/mydev-ywyi/devplace-notebook:1.0.10"

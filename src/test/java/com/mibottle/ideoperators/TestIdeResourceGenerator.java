@@ -69,7 +69,7 @@ class TestIdeResourceGenerator {
         // StatefulSet 생성 메서드를 호출
         StatefulSet statefulSet = ideResourceGenerator.statefulSetForIDE(
                 mockIdeConfig, "statefulset-name", "service-name", "label-name",
-                new ArrayList<>(), "external-pvc", "storage-class", "service-account", true, true);
+                new ArrayList<>(), "external-pvc", "storage-class", "service-account", true, true ,true);
 
         // 결과 검증
         assertNotNull(statefulSet, "StatefulSet should not be null");

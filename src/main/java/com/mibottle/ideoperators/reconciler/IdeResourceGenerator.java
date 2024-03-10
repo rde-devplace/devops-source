@@ -58,7 +58,8 @@ public class IdeResourceGenerator {
             String storageClassNameForUser,  // 내부 사용자 Disk 자원 할당 (Block Storage)
             String serviceAccountName,      // IDE에 대한 ServiceAccount
             Boolean isVscode,
-            Boolean isGit
+            Boolean isGit,
+            Boolean isNotebook
     ) {
         IdeConfigSpec spec = resource.getSpec();
         List<Volume> volumes = new ArrayList<>();
@@ -73,8 +74,7 @@ public class IdeResourceGenerator {
                 .build());
 
         // Web IDE를 사용하는 경우에만 Git Sercret 과 개발 환경을 위한 PVC를 추가한다.
-        if(isVscode) {
-            String secretName = resource.getSpec().getUserName() + IdeCommon.SECRET_NAME_POSTFIX;
+        if(isVscode || isNotebook) {
             // IDE를 위한 개별 개발 환경을 볼륨 클레임을 구성한다
             volumeClaims.add(new PersistentVolumeClaimBuilder()
                     .withNewMetadata()
@@ -88,8 +88,9 @@ public class IdeResourceGenerator {
                     .endResources()
                     .endSpec()
                     .build());
-
-            if(isGit) {
+        }
+        if(isGit) {
+                String secretName = resource.getSpec().getUserName() + IdeCommon.SECRET_NAME_POSTFIX;
                 // IDE를 위한 Secret을 추가합니다. (Git 정보)
                 volumes.add(new VolumeBuilder()
                         .withName(secretName)
@@ -97,8 +98,8 @@ public class IdeResourceGenerator {
                         .withSecretName(secretName) // 여기에 Secret 이름 지정
                         .endSecret()
                         .build());
-            }
         }
+
 
         return new StatefulSetBuilder()
                 .withNewMetadata()
@@ -115,7 +116,7 @@ public class IdeResourceGenerator {
                 .withNewTemplate()
                 .withNewMetadata()
                 .withLabels(Map.of("app", labelName))
-                .withAnnotations(Map.of("update", HashUtil.generateSHA256Hash(spec)))
+                //.withAnnotations(Map.of("update", HashUtil.generateSHA256Hash(spec)))
                 .endMetadata()
                 //--- Container Spec 설정
                 .withNewSpec()
@@ -307,7 +308,7 @@ public class IdeResourceGenerator {
      * @param port 컨테이너 포트
      * @return 생성된 Container 객체
      */
-    public Container wettyContainer(IdeConfigSpec spec, String containerName, String image, String basePath, Integer port, Boolean isVscode, Boolean isGet) {
+    public Container wettyContainer(IdeConfigSpec spec, String containerName, String image, String basePath, Integer port) {
         // Create  container
         return new ContainerBuilder()
                 .withName(containerName)
@@ -349,6 +350,58 @@ public class IdeResourceGenerator {
 
 
     /**
+     * Jupyter Notebook을 생성합니다.
+     *
+     * @param spec IdeConfigSpec 객체
+     * @param containerName 컨테이너의 이름
+     * @param image 컨테이너 이미지
+     * @param port 컨테이너 포트
+     * @return 생성된 Container 객체
+     */
+    public Container notbookContainer(IdeConfigSpec spec, String containerName, String image, Integer port) {
+        // Create  container
+        ContainerBuilder containerBuilder = new ContainerBuilder()
+                .withName(containerName)
+                .withImage(image)
+                .withImagePullPolicy("Always")
+                // ... Port 설정
+                .withPorts(new ContainerPortBuilder()
+                        .withContainerPort(port) //8888
+                        .build());
+
+
+        // ... ENV 설정
+        containerBuilder.addNewEnv()
+                .withName("JUPYTER_ENABLE_LAB")
+                .withValue("yes")
+                .endEnv()
+                .addNewEnv()
+                .withName("JUPYTER_TOKEN")
+                .withValue("")
+                .endEnv()
+                .addNewEnv()
+                .withName("NOTEBOOK_BASE_PATH")
+                .withValue("/" + spec.getUserName() + "/jupyter")
+                .endEnv()
+                .addNewEnv()
+                .withName("NOTEBOOK_PORT")
+                .withValue("3333")
+                .endEnv()
+        ;
+
+        // ... Volume Mount 설정
+        containerBuilder
+                .addNewVolumeMount()
+                .withName("user-dev-storage")
+                .withMountPath("/config")
+                .endVolumeMount();
+
+        return containerBuilder.build();
+    }
+
+
+
+    /**
      * IDE에 대한 Kubernetes Service를 생성합니다.
      *
      * @param resource IDE 설정을 담고 있는 IdeConfig 객체
@@ -367,6 +420,7 @@ public class IdeResourceGenerator {
         servicePorts.add(new ServicePort("TCP", "cli", null, 8443, "TCP", new IntOrString(8443)));
         servicePorts.add(new ServicePort("TCP", "ssh", null, 2222, "TCP", new IntOrString(2222)));
         servicePorts.add(new ServicePort("TCP", "wetty", null, 3000, "TCP", new IntOrString(3000)));
+        servicePorts.add(new ServicePort("TCP", "jupyter", null, 3333, "TCP", new IntOrString(3333)));
 
         Service service = new ServiceBuilder()
                 .withNewMetadata()

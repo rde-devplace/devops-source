@@ -218,10 +218,12 @@ public class IdeResourceService {
                                                       String storageClassNameForUser,
                                                       String serviceAccountName,
                                                       Boolean isVscode,
-                                                      Boolean isGit) {
+                                                      Boolean isGit,
+                                                      Boolean isNotebook) {
         String statefulSetName = resource.getSpec().getUserName() + IdeCommon.STATEFULSET_NAME_POSTFIX;
         String serviceName = resource.getSpec().getUserName() + IdeCommon.SERVICE_NAME_POSTFIX;
         String labelName = resource.getSpec().getUserName() + IdeCommon.LABEL_NAME_POSTFIX;
+
         StatefulSet statefulSet = ideResourceGenerator.statefulSetForIDE(
                 resource,
                 statefulSetName,
@@ -232,8 +234,10 @@ public class IdeResourceService {
                 storageClassNameForUser,
                 serviceAccountName,
                 isVscode,
-                isGit
+                isGit,
+                isNotebook
         );
+
 
         io.fabric8.kubernetes.api.model.Service service = ideResourceGenerator.serviceForIDE(
                 resource,
@@ -244,7 +248,11 @@ public class IdeResourceService {
         // StatefulSet 생성
         try {
             log.info("Creating or replacing StatefulSet: " + statefulSet.getMetadata().getName() + " in namespace: " + namespace);
-            client.apps().statefulSets().inNamespace(namespace).resource(statefulSet).serverSideApply();
+            //StatefulSet currentStatefulset = client.apps().statefulSets().inNamespace(namespace).withName(statefulSetName).get();
+            // Statefulset 현재 spec과 다를 경우에만 apply 적용
+            //if (! currentStatefulset.getSpec().equals(statefulSet.getSpec())) {
+                client.apps().statefulSets().inNamespace(namespace).resource(statefulSet).serverSideApply();
+            //}
         } catch (KubernetesClientException e) {
             log.error("Failed to create or replace Service: " + e.getMessage());
             // 적절한 예외 처리 로직
@@ -261,7 +269,13 @@ public class IdeResourceService {
         // Service 생성
         try {
             log.info("Creating or replacing Service: " + service.getMetadata().getName() + " in namespace: " + namespace);
-            client.services().inNamespace(namespace).resource(service).serverSideApply();
+
+            // currentService를 가져온다
+            //io.fabric8.kubernetes.api.model.Service currentService = client.services().inNamespace(namespace).withName(serviceName).get();
+            // Service 현재 spec과 다를 경우에만 apply 적용
+            //if (!currentService.getSpec().equals(service.getSpec())) {
+                client.services().inNamespace(namespace).resource(service).serverSideApply();
+            //}
         } catch (KubernetesClientException e) {
             log.error("Failed to create or replace Service: " + e.getMessage());
             // 적절한 예외 처리 로직

@@ -33,6 +33,8 @@ ide:
     image: "amdp-registry.skamdp.org/mydev-ywyi/ssh-with-k9s-extend:1.0"
   wetty:
     image: "amdp-registry.skamdp.org/mydev-ywyi/wetty-with-k9s:1.1"
+  notebook:
+    image: "amdp-registry.skamdp.org/mydev-ywyi/devplace-notebook:1.0.9"
 
 ---
 logging:

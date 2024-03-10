@@ -42,4 +42,4 @@ spec:
         - name: WETTY_IMAGE_PATH
           value: "${DOCKER_REGISTRY}/wetty-with-k9s:1.0"
         - name: NOTEBOOK_IMAGE_PATH
-          value: "${DOCKER_REGISTRY}/devplace-notebook:1.0.8"
+          value: "${DOCKER_REGISTRY}/devplace-notebook:1.0.10"

@@ -28,6 +28,12 @@
         </dependency>
 
         <dependency>
+            <groupId>io.javaoperatorsdk</groupId>
+            <artifactId>operator-framework-spring-boot-starter</artifactId>
+            <version>5.4.1</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
@@ -44,17 +50,17 @@
             <optional>true</optional>
         </dependency>
 
-        <dependency>
+        <!--dependency>
             <groupId>io.javaoperatorsdk</groupId>
             <artifactId>operator-framework</artifactId>
             <version>4.4.4</version>
         </dependency>
-
         <dependency>
             <groupId>io.fabric8</groupId>
             <artifactId>kubernetes-client</artifactId>
-            <version>6.9.0</version> <!-- 이 버전은 변경될 수 있으므로, 최신 버전을 확인하세요 -->
-        </dependency>
+            <version>6.9.0</version>
+        </dependency-->
+
         <dependency>
             <groupId>io.kubernetes</groupId>
             <artifactId>client-java</artifactId>

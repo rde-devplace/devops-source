@@ -87,12 +87,13 @@ class JoperatorApplicationTestsBK {
 
 
         Boolean isVscode = ideConfig.getSpec().getServiceTypes().contains("vscode");
+        Boolean isNotebook = ideConfig.getSpec().getServiceTypes().contains("notebook");
         Boolean isGit = ideConfig.getSpec().getVscode() != null;
         IdeResourceGenerator realIdeResourceGenerator = new IdeResourceGenerator();
         List<Container> containers = new ArrayList<Container>();
         containers.add(realIdeResourceGenerator.vscodeServerContainer(ideConfig.getSpec(), "vscodeserver", "vscode-server:1.0", 8443, isVscode, isGit));
         containers.add(realIdeResourceGenerator.sshServerContainer(ideConfig.getSpec(), "sshserver", "ssh-server:1.0", 2222, isVscode, isGit));
-        containers.add(realIdeResourceGenerator.wettyContainer(ideConfig.getSpec(), "wetty", "vscode-server:1.0", "/" + ideConfig.getSpec().getUserName() + "/cli/wetty", 3000, isVscode, isGit));
+        containers.add(realIdeResourceGenerator.wettyContainer(ideConfig.getSpec(), "wetty", "vscode-server:1.0", "/" + ideConfig.getSpec().getUserName() + "/cli/wetty", 3000));
 
         StatefulSet generatedStatefulSet = realIdeResourceGenerator.statefulSetForIDE(
                 ideConfig,
@@ -103,7 +104,8 @@ class JoperatorApplicationTestsBK {
                 "user-dev-storage",
                 "com-admin-sa",
                 isVscode,
-                isGit
+                isGit,
+                isNotebook
         );
 
 

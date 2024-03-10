@@ -72,6 +72,8 @@ public class VscodeConfigReconciler
     private String sshServerImage;
     @Value("${ide.wetty.image}")
     private String wettyImage;
+    @Value("${ide.notebook.image}")
+    private String notebookImage;
     @Value("${ide.comdev.pvcName}")
     private String comDevPvc;
 
@@ -121,6 +123,7 @@ public class VscodeConfigReconciler
         Boolean isVscode = spec.getServiceTypes().contains("vscode");
         Boolean isGit = spec.getVscode() != null;
         Boolean isWebssh = spec.getServiceTypes().contains("webssh");
+        Boolean isNotebook = spec.getServiceTypes().contains("notebook");
 
         /**
          * VS Code 서버를 위한 ServiceAccount, Role, RoleBinding, ClusterRole, ClusterRoleBinding 등을 생성하거나
@@ -151,9 +154,11 @@ public class VscodeConfigReconciler
                     break;
                     // WebSSH 컨테이너 생성
                 case "webssh":
-                    containers.add(ideResourceGenerator.wettyContainer(spec,"wetty", wettyImage, wettyBasePath, 3000, isVscode, isGit));
+                    containers.add(ideResourceGenerator.wettyContainer(spec,"wetty", wettyImage, wettyBasePath, 3000));
                     containers.add(ideResourceGenerator.sshServerContainer(spec,"sshserver", sshServerImage, 2222, isVscode, isGit));
                     break;
+                case "notebook":
+                    containers.add(ideResourceGenerator.notbookContainer(spec, "jupyter", notebookImage, 8888));
                 default:
                     log.info("serviceType is null or empty");
                     return;
@@ -164,7 +169,7 @@ public class VscodeConfigReconciler
          * IdeConfig 리소스에 정의된 서비스 유형에 따라 StatefulSet과 Service를 생성합니다.
          */
         Optional<String> statefulsetName = ideResourceService.createOrUpdateStatefulset(
-                resource, namespace, containers, comDevPvc, storageClassNameForUser, serviceAccountName.get(), isVscode, isGit);
+                resource, namespace, containers, comDevPvc, storageClassNameForUser, serviceAccountName.get(), isVscode, isGit, isNotebook);
         if(statefulsetName.isEmpty()) {
             return UpdateControl.noUpdate();
         }
