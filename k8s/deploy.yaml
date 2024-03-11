@@ -14,7 +14,7 @@ spec:
         prometheus.io/scrape: 'true'
         prometheus.io/port: '8081'
         prometheus.io/path: '/actuator/prometheus'
-        update: ea8fb826360b7a43eba8b2ac4edc379d
+        update: 276b1e784f2aaea87e337b3d9af6f9e7
       labels:
         app: ide-operator
     spec:
@@ -29,17 +29,4 @@ spec:
             runAsUser: 0
             privileged: true
         env:
-        - name: LOGGING_LEVEL
-          value: INFO
-        - name: COMDEV_PVC_NAME
-          value: "com-dev-pvc"
-        - name: USER_STORAGE_CLASS_NAME
-          value: "gp2"
-        - name: VSCODE_IMAGE_PATH
-          value: "amdp-registry.skamdp.org/mydev-ywyi/amdp-vscode-server:2.4220"
-        - name: SSHSERVER_IMAGE_PATH
-          value: "amdp-registry.skamdp.org/mydev-ywyi/ssh-with-k9s-extend:1.0.1"
-        - name: WETTY_IMAGE_PATH
-          value: "amdp-registry.skamdp.org/mydev-ywyi/wetty-with-k9s:1.0"
-        - name: NOTEBOOK_IMAGE_PATH
-          value: "amdp-registry.skamdp.org/mydev-ywyi/devplace-notebook:1.0.10"
+env:n        - name: LOGGING_LEVELn          value: "INFO"n
