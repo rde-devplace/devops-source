@@ -15,10 +15,12 @@ package com.mibottle.ideoperators.service;
  * limitations under the License.
  */
 import com.mibottle.ideoperators.customresource.IdeConfig;
+import com.mibottle.ideoperators.customresource.IdeConfigSpec;
 import com.mibottle.ideoperators.customresource.IdeRole;
 import com.mibottle.ideoperators.exception.IdeResourceDeleteException;
 import com.mibottle.ideoperators.model.IdeCommon;
 import com.mibottle.ideoperators.reconciler.IdeResourceGenerator;
+import com.mibottle.ideoperators.util.SVCPathGenerator;
 import com.mibottle.ideoperators.util.UpdateStatusHandler;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.Secret;
@@ -60,8 +62,9 @@ public class IdeResourceService {
      * @return
      */
     public Optional<String> createOrUpdateAuthentication(IdeConfig resource, String namespace, Boolean isWebssh) {
-        String serviceAccountName = resource.getSpec().getUserName() + IdeCommon.SA_NAME_POSTFIX;
-        String labelName = resource.getSpec().getUserName() + IdeCommon.LABEL_NAME_POSTFIX;
+        IdeConfigSpec spec = resource.getSpec();
+        String serviceAccountName = SVCPathGenerator.generateName(spec) + IdeCommon.SA_NAME_POSTFIX;
+        String labelName = SVCPathGenerator.generateName(spec) + IdeCommon.LABEL_NAME_POSTFIX;
         if(!isWebssh) {
             log.info("Webssh is not exist");
             return Optional.ofNullable(IdeCommon.DEFAULT_SERVICE_ACCOUNT_NAME);
@@ -97,7 +100,7 @@ public class IdeResourceService {
                     RoleBinding role = ideResourceGenerator.roleBindingForIDE(
                             resource,
                             ideRole,
-                            resource.getSpec().getUserName() + IdeCommon.ROLE_BINDING_NAME_POSTFIX,
+                            SVCPathGenerator.generateName(resource.getSpec()) + IdeCommon.ROLE_BINDING_NAME_POSTFIX,
                             labelName,
                             serviceAccountName
                     );
@@ -120,7 +123,7 @@ public class IdeResourceService {
                     ClusterRoleBinding clusterRole = ideResourceGenerator.clusterRoleBindingForIDE(
                             resource,
                             ideRole,
-                            resource.getSpec().getUserName() + IdeCommon.CLUSER_ROLE_BINDING_NAME_POSTFIX,
+                            SVCPathGenerator.generateName(resource.getSpec()) + IdeCommon.CLUSTER_ROLE_BINDING_NAME_POSTFIX,
                             labelName,
                             serviceAccountName
                     );
@@ -176,8 +179,9 @@ public class IdeResourceService {
             return Optional.of("isNotGit");
         }
 
-        String secretName = resource.getSpec().getUserName() + IdeCommon.SECRET_NAME_POSTFIX;
-        String labelName = resource.getSpec().getUserName() + IdeCommon.LABEL_NAME_POSTFIX;
+        String name_prefix = SVCPathGenerator.generateName(resource.getSpec());
+        String secretName = name_prefix + IdeCommon.SECRET_NAME_POSTFIX;
+        String labelName = name_prefix + IdeCommon.LABEL_NAME_POSTFIX;
         Secret secret = ideResourceGenerator.secretForIDE(resource, secretName, labelName);
         try {
             log.info("Creating or replacing Secret: " + secret.getMetadata().getName() + " in namespace: " + namespace);
@@ -220,9 +224,10 @@ public class IdeResourceService {
                                                       Boolean isVscode,
                                                       Boolean isGit,
                                                       Boolean isNotebook) {
-        String statefulSetName = resource.getSpec().getUserName() + IdeCommon.STATEFULSET_NAME_POSTFIX;
-        String serviceName = resource.getSpec().getUserName() + IdeCommon.SERVICE_NAME_POSTFIX;
-        String labelName = resource.getSpec().getUserName() + IdeCommon.LABEL_NAME_POSTFIX;
+        String name_prefix = SVCPathGenerator.generateName(resource.getSpec());
+        String statefulSetName = name_prefix + IdeCommon.STATEFULSET_NAME_POSTFIX;
+        String serviceName = name_prefix + IdeCommon.SERVICE_NAME_POSTFIX;
+        String labelName = name_prefix + IdeCommon.LABEL_NAME_POSTFIX;
 
         StatefulSet statefulSet = ideResourceGenerator.statefulSetForIDE(
                 resource,
@@ -294,7 +299,8 @@ public class IdeResourceService {
 
 
     public Optional<String> deleteStatefulset(IdeConfig resource, String namespace) throws IdeResourceDeleteException {
-        String statefulSetName = resource.getSpec().getUserName() + IdeCommon.STATEFULSET_NAME_POSTFIX;
+        String name_prefix = SVCPathGenerator.generateName(resource.getSpec());
+        String statefulSetName = name_prefix + IdeCommon.STATEFULSET_NAME_POSTFIX;
         try {
             client.apps().statefulSets().inNamespace(namespace).withName(statefulSetName).delete();
         } catch (KubernetesClientException e) {
@@ -309,7 +315,8 @@ public class IdeResourceService {
     }
 
     public Optional<String> deleteService(IdeConfig resource, String namespace) throws IdeResourceDeleteException {
-        String serviceName = resource.getSpec().getUserName() + IdeCommon.SERVICE_NAME_POSTFIX;
+        String name_prefix = SVCPathGenerator.generateName(resource.getSpec());
+        String serviceName = name_prefix + IdeCommon.SERVICE_NAME_POSTFIX;
         try {
             client.services().inNamespace(namespace).withName(serviceName).delete();
         } catch (KubernetesClientException e) {
@@ -324,7 +331,8 @@ public class IdeResourceService {
     }
 
     public Optional<String> deleteSecret(IdeConfig resource, String namespace) throws IdeResourceDeleteException {
-        String secretName = resource.getSpec().getUserName() + IdeCommon.SECRET_NAME_POSTFIX;
+        String name_prefix = SVCPathGenerator.generateName(resource.getSpec());
+        String secretName = name_prefix + IdeCommon.SECRET_NAME_POSTFIX;
         try {
             client.secrets().inNamespace(namespace).withName(secretName).delete();
         } catch (KubernetesClientException e) {
@@ -339,7 +347,8 @@ public class IdeResourceService {
     }
 
     public Optional<String> deleteServiceAccount(IdeConfig resource, String namespace) throws IdeResourceDeleteException {
-        String serviceAccountName = resource.getSpec().getUserName() + IdeCommon.SA_NAME_POSTFIX;
+        String name_prefix = SVCPathGenerator.generateName(resource.getSpec());
+        String serviceAccountName = name_prefix + IdeCommon.SA_NAME_POSTFIX;
         try {
             client.serviceAccounts().inNamespace(namespace).withName(serviceAccountName).delete();
         } catch (KubernetesClientException e) {
@@ -355,10 +364,11 @@ public class IdeResourceService {
 
     public Optional<String> deleteRoleBinding(IdeConfig resource, String namespace) throws IdeResourceDeleteException {
         Optional<String> permissionScope = Optional.ofNullable(resource.getSpec().getWebssh().getPermission().getScope());
-        String roleBindingName = resource.getSpec().getUserName() + IdeCommon.ROLE_BINDING_NAME_POSTFIX;
+        String name_prefix = SVCPathGenerator.generateName(resource.getSpec());
+        String roleBindingName = name_prefix + IdeCommon.ROLE_BINDING_NAME_POSTFIX;
         try {
             if (permissionScope.isPresent() && permissionScope.get().equals(IdeCommon.WEBSSH_PERMISSION_SCOPE_CLUSTER)) {
-                roleBindingName = resource.getSpec().getUserName() + IdeCommon.CLUSER_ROLE_BINDING_NAME_POSTFIX;
+                roleBindingName = name_prefix + IdeCommon.CLUSTER_ROLE_BINDING_NAME_POSTFIX;
                 client.rbac().clusterRoleBindings().withName(roleBindingName).delete();
             } else {
                 client.rbac().roleBindings().inNamespace(namespace).withName(roleBindingName).delete();

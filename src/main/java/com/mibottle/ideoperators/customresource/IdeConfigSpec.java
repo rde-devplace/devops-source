@@ -23,6 +23,10 @@ import java.util.List;
 public class IdeConfigSpec {
 
     private String userName;
+    // v2beta1 에 추가
+    private String wsName;  // workspace Name
+    private String appName; // application Name
+
     private List<String> serviceTypes;
     private WebSSH webssh;
     private Vscode vscode;

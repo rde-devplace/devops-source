@@ -36,10 +36,10 @@ spec:
         - name: USER_STORAGE_CLASS_NAME
           value: "gp2"
         - name: VSCODE_IMAGE_PATH
-          value: "${DOCKER_REGISTRY}/amdp-vscode-server:2.4220"
+          value: "${DOCKER_REGISTRY}/devplace-vscode-server:2.4220"
         - name: SSHSERVER_IMAGE_PATH
           value: "${DOCKER_REGISTRY}/ssh-with-k9s-extend:1.0.1"
         - name: WETTY_IMAGE_PATH
-          value: "${DOCKER_REGISTRY}/wetty-with-k9s:1.0"
+          value: "${DOCKER_REGISTRY}/wetty-with-k9s:1.1"
         - name: NOTEBOOK_IMAGE_PATH
           value: "${DOCKER_REGISTRY}/devplace-notebook:1.0.10"

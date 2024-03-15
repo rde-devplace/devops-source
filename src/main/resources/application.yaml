@@ -28,13 +28,13 @@ ide:
   user:
     storageClassName: gp2
   vscode:
-    image: "amdp-registry.skamdp.org/mydev-ywyi/amdp-vscode-server:2.1"
+    image: "amdp-registry.skamdp.org/mydev-ywyi/devplace-vscode-server:2.4220"
   sshserver:
-    image: "amdp-registry.skamdp.org/mydev-ywyi/ssh-with-k9s-extend:1.0"
+    image: "amdp-registry.skamdp.org/mydev-ywyi/ssh-with-k9s-extend:1.0.1"
   wetty:
     image: "amdp-registry.skamdp.org/mydev-ywyi/wetty-with-k9s:1.1"
   notebook:
-    image: "amdp-registry.skamdp.org/mydev-ywyi/devplace-notebook:1.0.9"
+    image: "amdp-registry.skamdp.org/mydev-ywyi/devplace-notebook:1.0.10"
 
 ---
 logging:

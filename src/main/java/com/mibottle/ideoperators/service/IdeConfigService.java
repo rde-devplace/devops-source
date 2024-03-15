@@ -19,6 +19,7 @@ import com.mibottle.ideoperators.customresource.IdeConfig;
 import com.mibottle.ideoperators.customresource.IdeConfigSpec;
 import io.fabric8.kubernetes.api.model.DefaultKubernetesResourceList;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -109,7 +110,9 @@ public class IdeConfigService {
         return configList;
     }
 
-    public List<IdeConfig> getIdeConfig(String namespace, String ideConfigName) {
+    // 조건에 따라 검색하게
+    // null이 아닌 것을 찾아서 ...
+    public List<IdeConfig> getIdeConfigs(String namespace, String userName, String wsName, String appName) {
         List<IdeConfig> configs = fetchIdeConfigs(namespace);
         List<IdeConfig> matchingConfig = new ArrayList<>();
 
@@ -117,7 +120,10 @@ public class IdeConfigService {
             log.info("No IdeConfigs found in namespace: " + namespace);
         } else {
             for (IdeConfig config : configs) {
-                if (config != null && ideConfigName.equals(config.getSpec().getUserName())) {
+                if (config != null &&
+                        (userName == null || userName.equals(config.getSpec().getUserName())) &&
+                        (wsName == null || wsName.equals(config.getSpec().getWsName())) &&
+                        (appName == null || appName.equals(config.getSpec().getAppName()))) {
                     matchingConfig.add(config);
                     log.info("Found matching IdeConfig: " + config.getMetadata());
                 }
@@ -126,6 +132,39 @@ public class IdeConfigService {
 
         return matchingConfig;
     }
+
+    // 현재 상태를 가져 오는 메서드 예시
+    public IdeConfig getIdeConfig(String namespace, String ideConfigName) {
+        try {
+            // Kubernetes 클라이언트를 사용하여 현재 상태 가져오기
+            return client.resources(IdeConfig.class, IdeConfigService.IdeConfigList.class).inNamespace(namespace).withName(ideConfigName).get();
+        } catch (KubernetesClientException e) {
+            // 예외 처리
+            log.error("Failed to get current state of resource {} in namespace {}", ideConfigName, namespace, e);
+            return null;
+        }
+    }
+
+    /*
+    public List<IdeConfig> getIdeConfig(String namespace, String ideConfigName) {
+        List<IdeConfig> configs = fetchIdeConfigs(namespace);
+        List<IdeConfig> matchingConfig = new ArrayList<>();
+
+        if (configs.isEmpty()) {
+            log.info("No IdeConfigs found in namespace: " + namespace);
+        } else {
+            for (IdeConfig config : configs) {
+                if (config != null && ideConfigName.equals(config.getMetadata().getName())) {
+                    matchingConfig.add(config);
+                    log.info("Found matching IdeConfig: " + config.getMetadata());
+                }
+            }
+        }
+
+        return matchingConfig;
+    }
+
+     */
 
 
     // updateIdeConfig 메소드 추가

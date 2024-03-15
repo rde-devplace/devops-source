@@ -20,7 +20,9 @@ import com.mibottle.ideoperators.customresource.IdeConfigSpec;
 import com.mibottle.ideoperators.customresource.IdeRole;
 import com.mibottle.ideoperators.exception.IdeResourceDeleteException;
 import com.mibottle.ideoperators.model.IdeCommon;
+import com.mibottle.ideoperators.service.IdeConfigService;
 import com.mibottle.ideoperators.service.IdeResourceService;
+import com.mibottle.ideoperators.util.SVCPathGenerator;
 import com.mibottle.ideoperators.util.UpdateStatusHandler;
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.Secret;
@@ -31,6 +33,8 @@ import io.fabric8.kubernetes.api.model.rbac.ClusterRoleBinding;
 import io.fabric8.kubernetes.api.model.rbac.RoleBinding;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
+import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
+import io.fabric8.kubernetes.client.dsl.Resource;
 import io.javaoperatorsdk.operator.api.config.informer.InformerConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.*;
 import io.javaoperatorsdk.operator.processing.event.rate.RateLimited;
@@ -65,6 +69,9 @@ public class VscodeConfigReconciler
 
     @Autowired
     private IdeResourceService ideResourceService;
+
+    @Autowired
+    private IdeConfigService ideConfigService;
 
     @Value("${ide.vscode.image}")
     private String vscodeImage;
@@ -115,15 +122,19 @@ public class VscodeConfigReconciler
             return UpdateControl.noUpdate(); // or appropriate action
         }
 
+        if (!resource.getMetadata().getNamespace().equals("kube-pattern")) {
+            return UpdateControl.noUpdate();
+        }
+
         String namespace = resource.getMetadata().getNamespace();
         IdeConfigSpec spec = resource.getSpec();
-        String wettyBasePath = "/" + spec.getUserName() + "/cli";
+        String wettyBasePath = SVCPathGenerator.generatePath(spec) + IdeCommon.WEBSSH_PATH_NAME;
 
         // VS Code, webSSH 서비스가 활성인지 비활성인지를 확인합니다.
-        Boolean isVscode = spec.getServiceTypes().contains("vscode");
+        Boolean isVscode = spec.getServiceTypes().contains(IdeCommon.VSCODE_SERVICE_TYPE);
         Boolean isGit = spec.getVscode() != null;
-        Boolean isWebssh = spec.getServiceTypes().contains("webssh");
-        Boolean isNotebook = spec.getServiceTypes().contains("notebook");
+        Boolean isWebssh = spec.getServiceTypes().contains(IdeCommon.WEBSSH_SERVICE_TYPE);
+        Boolean isNotebook = spec.getServiceTypes().contains(IdeCommon.NOTEBOOK_SERVICE_TYPE);
 
         /**
          * VS Code 서버를 위한 ServiceAccount, Role, RoleBinding, ClusterRole, ClusterRoleBinding 등을 생성하거나
@@ -146,19 +157,40 @@ public class VscodeConfigReconciler
          * IdeConfig의 ServiceType에 정의되어 있는 서비스 유형 선택에 따라 container 들을 생성합니다.
          */
         List<Container> containers = new ArrayList<>();
+        IdeConfig finalResource = resource;
         spec.getServiceTypes().forEach(serviceType -> {
             switch(serviceType) {
                 // VS Code 서버 컨테이너 생성
                 case "vscode":
-                    containers.add(ideResourceGenerator.vscodeServerContainer(spec, "vscodeserver", vscodeImage, 8443, isVscode, isGit));
+                    containers.add(ideResourceGenerator.vscodeServerContainer(
+                            finalResource,
+                            "vscodeserver",
+                            vscodeImage,
+                            IdeCommon.VSCODE_PORT,
+                            isVscode, isGit));
                     break;
                     // WebSSH 컨테이너 생성
                 case "webssh":
-                    containers.add(ideResourceGenerator.wettyContainer(spec,"wetty", wettyImage, wettyBasePath, 3000));
-                    containers.add(ideResourceGenerator.sshServerContainer(spec,"sshserver", sshServerImage, 2222, isVscode, isGit));
+                    containers.add(ideResourceGenerator.wettyContainer(
+                            finalResource,
+                            "wetty",
+                            wettyImage,
+                            wettyBasePath,
+                            IdeCommon.WETTY_PORT));
+
+                    containers.add(ideResourceGenerator.sshServerContainer(
+                            finalResource,
+                            "sshserver",
+                            sshServerImage,
+                            IdeCommon.SSH_PORT,
+                            isVscode, isGit));
                     break;
                 case "notebook":
-                    containers.add(ideResourceGenerator.notbookContainer(spec, "jupyter", notebookImage, 8888));
+                    containers.add(ideResourceGenerator.notbookContainer(
+                            finalResource,
+                            "jupyter",
+                            notebookImage,
+                            IdeCommon.NOTEBOOK_PORT));
                 default:
                     log.info("serviceType is null or empty");
                     return;
@@ -178,7 +210,7 @@ public class VscodeConfigReconciler
         log.info("- statefulsetName: " + statefulsetName.get());
         log.info("- namespace: " + namespace);
         log.info("- serviceAccountName: " + serviceAccountName.get());
-        log.info("- service: " + spec.getUserName() + IdeCommon.SERVICE_NAME_POSTFIX);
+        log.info("- service: " + SVCPathGenerator.generateName(spec) + IdeCommon.SERVICE_NAME_POSTFIX);
         log.info("- secret: " + secretName.get());
 
         resource = UpdateStatusHandler.updateStatus(

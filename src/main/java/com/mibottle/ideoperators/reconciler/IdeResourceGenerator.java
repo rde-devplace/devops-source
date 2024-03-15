@@ -20,6 +20,7 @@ import com.mibottle.ideoperators.customresource.IdeConfigSpec;
 import com.mibottle.ideoperators.customresource.IdeRole;
 import com.mibottle.ideoperators.model.IdeCommon;
 import com.mibottle.ideoperators.util.HashUtil;
+import com.mibottle.ideoperators.util.SVCPathGenerator;
 import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetBuilder;
@@ -65,6 +66,7 @@ public class IdeResourceGenerator {
         List<Volume> volumes = new ArrayList<>();
         List<PersistentVolumeClaim> volumeClaims = new ArrayList<>();
 
+
         // IDE를 초기화하기 위한 공통 PVC를 추가합니다.
         volumes.add (new VolumeBuilder()
                 .withName(IdeCommon.INIT_COMM_STORAGE)
@@ -90,7 +92,8 @@ public class IdeResourceGenerator {
                     .build());
         }
         if(isGit) {
-                String secretName = resource.getSpec().getUserName() + IdeCommon.SECRET_NAME_POSTFIX;
+                String name_prefix = SVCPathGenerator.generateName(spec);
+                String secretName = name_prefix + IdeCommon.SECRET_NAME_POSTFIX;
                 // IDE를 위한 Secret을 추가합니다. (Git 정보)
                 volumes.add(new VolumeBuilder()
                         .withName(secretName)
@@ -109,13 +112,14 @@ public class IdeResourceGenerator {
                 .withNewSpec()
                 .withReplicas(spec.getReplicas())
                 .withNewSelector()
+                .addToMatchLabels(IdeCommon.OPERATOR_LABEL_KEY, IdeCommon.OPERATOR_LABEL_VALUE)
                 .addToMatchLabels("app", labelName)
                 .endSelector()
                 // ... 기타 필요한 설 정
                 .withServiceName(serviceName)
                 .withNewTemplate()
                 .withNewMetadata()
-                .withLabels(Map.of("app", labelName))
+                .withLabels(Map.of("app", labelName, IdeCommon.OPERATOR_LABEL_KEY, IdeCommon.OPERATOR_LABEL_VALUE))
                 //.withAnnotations(Map.of("update", HashUtil.generateSHA256Hash(spec)))
                 .endMetadata()
                 //--- Container Spec 설정
@@ -143,7 +147,7 @@ public class IdeResourceGenerator {
      * @param port 컨테이너 포트
      * @return 생성된 Container 객체
      */
-    public Container sshServerContainer(IdeConfigSpec spec, String containerName, String image, Integer port, Boolean isVscode, Boolean isGit) {
+    public Container sshServerContainer(IdeConfig resource, String containerName, String image, Integer port, Boolean isVscode, Boolean isGit) {
         // Create  container
         ContainerBuilder containerBuilder = new ContainerBuilder()
                 .withName(containerName)
@@ -200,7 +204,9 @@ public class IdeResourceGenerator {
      * @param port 컨테이너 포트
      * @return 생성된 Container 객체
      */
-    public Container vscodeServerContainer(IdeConfigSpec spec, String containerName, String image, Integer port, Boolean isVscode, Boolean isGit) {
+    public Container vscodeServerContainer(IdeConfig resource, String containerName, String image, Integer port, Boolean isVscode, Boolean isGit) {
+        IdeConfigSpec spec = resource.getSpec();
+
         ContainerBuilder containerBuilder = new ContainerBuilder()
                 .withName(containerName)
                 .withImage(image)
@@ -238,8 +244,19 @@ public class IdeResourceGenerator {
                 .withReadOnly(true)
                 .endVolumeMount();
 
+        // anntation의 packageType.cloriver.io/vscode: "basic"
+        // 이것은 code-init의 extensions/install-${PACKAGETYPE}.yaml 파일을 사용하여 설치 대상을 식별한다. (예: basic, python, java, nodejs, go, csharp)
+        String packageType = resource.getMetadata().getAnnotations().get(IdeCommon.PACKAGE_TYPE);
+        if (packageType != null) {
+            containerBuilder.addNewEnv()
+                    .withName("PACKAGETYPE")
+                    .withValue(packageType)
+                    .endEnv();
+        }
+
         if(isGit) {
-            String secretName = spec.getUserName() + IdeCommon.SECRET_NAME_POSTFIX;
+            String name_prefix = SVCPathGenerator.generateName(spec);
+            String secretName = name_prefix + IdeCommon.SECRET_NAME_POSTFIX;
             containerBuilder.addNewVolumeMount()
                     .withName(secretName)
                     .withMountPath("/etc/git-secret")
@@ -308,7 +325,7 @@ public class IdeResourceGenerator {
      * @param port 컨테이너 포트
      * @return 생성된 Container 객체
      */
-    public Container wettyContainer(IdeConfigSpec spec, String containerName, String image, String basePath, Integer port) {
+    public Container wettyContainer(IdeConfig resource, String containerName, String image, String basePath, Integer port) {
         // Create  container
         return new ContainerBuilder()
                 .withName(containerName)
@@ -358,7 +375,8 @@ public class IdeResourceGenerator {
      * @param port 컨테이너 포트
      * @return 생성된 Container 객체
      */
-    public Container notbookContainer(IdeConfigSpec spec, String containerName, String image, Integer port) {
+    public Container notbookContainer(IdeConfig resource, String containerName, String image, Integer port) {
+
         // Create  container
         ContainerBuilder containerBuilder = new ContainerBuilder()
                 .withName(containerName)
@@ -381,11 +399,11 @@ public class IdeResourceGenerator {
                 .endEnv()
                 .addNewEnv()
                 .withName("NOTEBOOK_BASE_PATH")
-                .withValue("/" + spec.getUserName() + "/jupyter")
+                .withValue(SVCPathGenerator.generatePath(resource.getSpec()) + "/jupyter")
                 .endEnv()
                 .addNewEnv()
                 .withName("NOTEBOOK_PORT")
-                .withValue("3333")
+                .withValue(IdeCommon.NOTEBOOK_PORT.toString())
                 .endEnv()
         ;
 
@@ -417,19 +435,20 @@ public class IdeResourceGenerator {
         /**
          * vscode-server, wetty, ssh-server에 대한 port를 등록하낟
          */
-        servicePorts.add(new ServicePort("TCP", "cli", null, 8443, "TCP", new IntOrString(8443)));
-        servicePorts.add(new ServicePort("TCP", "ssh", null, 2222, "TCP", new IntOrString(2222)));
-        servicePorts.add(new ServicePort("TCP", "wetty", null, 3000, "TCP", new IntOrString(3000)));
-        servicePorts.add(new ServicePort("TCP", "jupyter", null, 3333, "TCP", new IntOrString(3333)));
+        servicePorts.add(new ServicePort("TCP", "vscode", null, IdeCommon.VSCODE_PORT, "TCP", new IntOrString(IdeCommon.VSCODE_PORT)));
+        servicePorts.add(new ServicePort("TCP", "ssh", null, IdeCommon.SSH_PORT, "TCP", new IntOrString(IdeCommon.SSH_PORT)));
+        servicePorts.add(new ServicePort("TCP", "wetty", null, IdeCommon.WETTY_PORT, "TCP", new IntOrString(IdeCommon.WETTY_PORT)));
+        servicePorts.add(new ServicePort("TCP", "jupyter", null, IdeCommon.NOTEBOOK_PORT, "TCP", new IntOrString(IdeCommon.NOTEBOOK_PORT)));
 
         Service service = new ServiceBuilder()
                 .withNewMetadata()
                 .withName(serviceName)
                 .withAnnotations(Map.of(IdeCommon.IDECONFIG_GROUP, IdeCommon.IDECONFIG_CRD_PLURAL, "userName", resource.getSpec().getUserName()))
+                .addToLabels(IdeCommon.OPERATOR_LABEL_KEY, IdeCommon.OPERATOR_LABEL_VALUE)
                 .addToLabels("app", labelName)
                 .endMetadata()
                 .withNewSpec()
-                .withSelector(Map.of("app", labelName))
+                .withSelector(Map.of("app", labelName, IdeCommon.OPERATOR_LABEL_KEY, IdeCommon.OPERATOR_LABEL_VALUE))
                 .withPorts(servicePorts)
                 .endSpec()
                 .build();
@@ -452,6 +471,7 @@ public class IdeResourceGenerator {
                 .withNewMetadata()
                 .withName(secretName)
                 .withAnnotations(Map.of(IdeCommon.IDECONFIG_GROUP, IdeCommon.IDECONFIG_CRD_PLURAL, "userName", resource.getSpec().getUserName()))
+                .addToLabels(IdeCommon.OPERATOR_LABEL_KEY, IdeCommon.OPERATOR_LABEL_VALUE)
                 .addToLabels("app", labelName)
                 .endMetadata()
                 .withType("Opaque")
@@ -483,7 +503,8 @@ public class IdeResourceGenerator {
      * @return
      */
     public ServiceAccount serviceAccountForIDE(IdeConfig resource, String serviceAccountName, String labelName) {
-        if (resource.getSpec().getWebssh().getPermission().getServiceAccountName() != null) {
+        if (    resource.getSpec().getWebssh().getPermission().getUseType().equals("use") &&
+                resource.getSpec().getWebssh().getPermission().getServiceAccountName() != null) {
             serviceAccountName = resource.getSpec().getWebssh().getPermission().getServiceAccountName();
         }
 
@@ -491,6 +512,7 @@ public class IdeResourceGenerator {
                 .withNewMetadata()
                 .withName(serviceAccountName)
                 .withAnnotations(Map.of(IdeCommon.IDECONFIG_GROUP, IdeCommon.IDECONFIG_CRD_PLURAL, "userName", resource.getSpec().getUserName()))
+                .addToLabels(IdeCommon.OPERATOR_LABEL_KEY, IdeCommon.OPERATOR_LABEL_VALUE)
                 .addToLabels("app", labelName)
                 .endMetadata()
                 .build();
@@ -512,6 +534,7 @@ public class IdeResourceGenerator {
                 .withNewMetadata()
                 .withName(roleBindingName)
                 .withAnnotations(Map.of(IdeCommon.IDECONFIG_GROUP, IdeCommon.IDECONFIG_CRD_PLURAL, "userName", resource.getSpec().getUserName()))
+                .addToLabels(IdeCommon.OPERATOR_LABEL_KEY, IdeCommon.OPERATOR_LABEL_VALUE)
                 .addToLabels("app", labelName)
                 .endMetadata()
                 .withNewRoleRef()
@@ -542,6 +565,7 @@ public class IdeResourceGenerator {
                 .withNewMetadata()
                 .withName(clusterRoleBindingName)
                 .withAnnotations(Map.of(IdeCommon.IDECONFIG_GROUP, IdeCommon.IDECONFIG_CRD_PLURAL, "userName", resource.getSpec().getUserName()))
+                .addToLabels(IdeCommon.OPERATOR_LABEL_KEY, IdeCommon.OPERATOR_LABEL_VALUE)
                 .addToLabels("app", labelName)
                 .endMetadata()
                 .withNewRoleRef()

@@ -19,8 +19,10 @@
 /Users/himang10/mydev/digital-devplace/devplace-operator/src/main/java/com/mibottle/ideoperators/customresource/IdeConfigSpec.java
 /Users/himang10/mydev/digital-devplace/devplace-operator/src/main/java/com/mibottle/ideoperators/reconciler/VscodeConfigReconciler.java
 /Users/himang10/mydev/digital-devplace/devplace-operator/src/main/java/com/mibottle/ideoperators/customresource/IdeConfigStatus.java
+/Users/himang10/mydev/digital-devplace/devplace-operator/src/main/java/com/mibottle/ideoperators/util/SVCPathValues.java
 /Users/himang10/mydev/digital-devplace/devplace-operator/src/main/java/com/mibottle/ideoperators/reconciler/IdeResourceGenerator.java
 /Users/himang10/mydev/digital-devplace/devplace-operator/src/main/java/com/mibottle/ideoperators/service/IdeConfigService.java
 /Users/himang10/mydev/digital-devplace/devplace-operator/src/main/java/com/mibottle/ideoperators/reconciler/IdeSourceGeneratorForYaml.java
 /Users/himang10/mydev/digital-devplace/devplace-operator/src/main/java/com/mibottle/ideoperators/model/RoleBindingKind.java
+/Users/himang10/mydev/digital-devplace/devplace-operator/src/main/java/com/mibottle/ideoperators/util/SVCPathGenerator.java
 /Users/himang10/mydev/digital-devplace/devplace-operator/src/main/java/com/mibottle/ideoperators/customresource/IdeConfig.java

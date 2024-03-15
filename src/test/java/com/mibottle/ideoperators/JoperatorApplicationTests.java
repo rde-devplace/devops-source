@@ -131,12 +131,12 @@ class JoperatorApplicationTests {
             switch(serviceType) {
                 // VS Code 서버 컨테이너 생성
                 case "vscode":
-                    containers.add(ideResourceGenerator.vscodeServerContainer(spec, "vscodeserver", vscodeImage, 8443, isVscode, isGit));
+                    containers.add(ideResourceGenerator.vscodeServerContainer(resource, "vscodeserver", vscodeImage, 8443, isVscode, isGit));
                     break;
                 // WebSSH 컨테이너 생성
                 case "webssh":
-                    containers.add(ideResourceGenerator.wettyContainer(spec,"wetty", wettyImage, wettyBasePath, 3000));
-                    containers.add(ideResourceGenerator.sshServerContainer(spec,"sshserver", sshServerImage, 2222, isVscode, isGit));
+                    containers.add(ideResourceGenerator.wettyContainer(resource,"wetty", wettyImage, wettyBasePath, 3000));
+                    containers.add(ideResourceGenerator.sshServerContainer(resource,"sshserver", sshServerImage, 2222, isVscode, isGit));
                     break;
                 default:
                     System.out.println("serviceType is null or empty");

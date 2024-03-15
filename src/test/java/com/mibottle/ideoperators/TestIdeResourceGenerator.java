@@ -46,6 +46,8 @@ class TestIdeResourceGenerator {
         // Mock 객체 설정
         when(mockIdeConfig.getSpec()).thenReturn(mockIdeConfigSpec);
         when(mockIdeConfigSpec.getUserName()).thenReturn("himang10");
+        when(mockIdeConfigSpec.getWsName()).thenReturn("workspace");
+        when(mockIdeConfigSpec.getAppName()).thenReturn("app");
         when(mockIdeConfigSpec.getServiceTypes()).thenReturn(Arrays.asList("vscode", "webssh"));
         when(mockIdeConfigSpec.getWebssh()).thenReturn(mockWebSSH);
         when(mockIdeConfigSpec.getVscode()).thenReturn(mockVscode);
@@ -87,7 +89,7 @@ class TestIdeResourceGenerator {
     void testSshServerContainer() {
         // Container 생성 메서드 호출
         Container container = ideResourceGenerator.sshServerContainer(
-                mockIdeConfigSpec, "container-name", "image", 2222, true, true);
+                mockIdeConfig, "container-name", "image", 2222, true, true);
 
         // 결과 검증
         assertNotNull(container, "Container should not be null");
