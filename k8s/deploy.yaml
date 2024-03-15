@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ide-operator
-  namespace: kube-pattern
+  namespace: part-rde
 spec:
   replicas: 1
   selector:
@@ -14,7 +14,7 @@ spec:
         prometheus.io/scrape: 'true'
         prometheus.io/port: '8081'
         prometheus.io/path: '/actuator/prometheus'
-        update: 653782c1cebf9a5c96577191dbffb6fe
+        update: 0a521fcd53ab77cfd6d0caf58f74d36e
       labels:
         app: ide-operator
     spec:
@@ -36,10 +36,10 @@ spec:
         - name: USER_STORAGE_CLASS_NAME
           value: "gp2"
         - name: VSCODE_IMAGE_PATH
-          value: "amdp-registry.skamdp.org/mydev-ywyi/amdp-vscode-server:2.4220"
+          value: "amdp-registry.skamdp.org/mydev-ywyi/devplace-vscode-server:2.4220"
         - name: SSHSERVER_IMAGE_PATH
           value: "amdp-registry.skamdp.org/mydev-ywyi/ssh-with-k9s-extend:1.0.1"
         - name: WETTY_IMAGE_PATH
-          value: "amdp-registry.skamdp.org/mydev-ywyi/wetty-with-k9s:1.0"
+          value: "amdp-registry.skamdp.org/mydev-ywyi/wetty-with-k9s:1.1"
         - name: NOTEBOOK_IMAGE_PATH
           value: "amdp-registry.skamdp.org/mydev-ywyi/devplace-notebook:1.0.10"

@@ -122,9 +122,11 @@ public class VscodeConfigReconciler
             return UpdateControl.noUpdate(); // or appropriate action
         }
 
+        /*
         if (!resource.getMetadata().getNamespace().equals("kube-pattern")) {
             return UpdateControl.noUpdate();
         }
+         */
 
         String namespace = resource.getMetadata().getNamespace();
         IdeConfigSpec spec = resource.getSpec();
