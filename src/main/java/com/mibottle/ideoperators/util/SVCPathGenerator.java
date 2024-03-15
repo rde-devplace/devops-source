@@ -8,14 +8,14 @@ public class SVCPathGenerator {
         String wsName = spec.getWsName();
         String appName = spec.getAppName();
 
-        if (wsName == null) {
-            if (appName == null) {
+        if (wsName == null || wsName.isEmpty()) {
+            if (appName == null || appName.isEmpty()) {
                 return "/" + userName;
             } else {
                 return "/" + userName + "/" + appName;
             }
         } else {
-            if (appName == null) {
+            if (appName == null || appName.isEmpty()) {
                 return "/" + userName + "/" + wsName;
             } else {
                 return "/" + userName + "/" + wsName + "/" + appName;
@@ -28,14 +28,14 @@ public class SVCPathGenerator {
         String wsName = spec.getWsName();
         String appName = spec.getAppName();
 
-        if (wsName == null) {
-            if (appName == null) {
+        if (wsName == null || wsName.isEmpty()) {
+            if (appName == null || appName.isEmpty()) {
                 return userName;
             } else {
                 return userName + "-" + appName;
             }
         } else {
-            if (appName == null) {
+            if (appName == null || appName.isEmpty()) {
                 return userName + "-" + wsName;
             } else {
                 return userName + "-" + wsName + "-" + appName;

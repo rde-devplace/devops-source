@@ -50,6 +50,12 @@ public class IdeConfigController {
         String ideConfigName = name;
         try {
             log.info("Controller createIdeConfig(): " + ideConfigSpec.toString());
+            if(ideConfigSpec.getWsName() == null) {
+                ideConfigSpec.setWsName("");
+            }
+            if(ideConfigSpec.getAppName() == null) {
+                ideConfigSpec.setAppName("");
+            }
             ideConfigService.createIdeConfig(namespace, ideConfigName, ideConfigSpec);
             return new ResponseEntity<>("IdeConfig created successfully.", HttpStatus.OK);
         } catch (Exception e) {
