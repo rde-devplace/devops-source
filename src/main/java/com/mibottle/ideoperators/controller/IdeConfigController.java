@@ -46,7 +46,11 @@ public class IdeConfigController {
      * @return ResponseEntity
      */
     @PostMapping("/custom-resource")
-    public ResponseEntity<String> createIdeConfig(@RequestParam String name, @RequestParam String namespace, @RequestBody IdeConfigSpec ideConfigSpec) {
+    public ResponseEntity<String> createIdeConfig(
+            @RequestParam String name,
+            @RequestParam String namespace,
+            @RequestParam(required = false, defaultValue = "basic") String packageType,
+            @RequestBody IdeConfigSpec ideConfigSpec) {
         String ideConfigName = name;
         try {
             log.info("Controller createIdeConfig(): " + ideConfigSpec.toString());
@@ -56,7 +60,7 @@ public class IdeConfigController {
             if(ideConfigSpec.getAppName() == null) {
                 ideConfigSpec.setAppName("");
             }
-            ideConfigService.createIdeConfig(namespace, ideConfigName, ideConfigSpec);
+            ideConfigService.createIdeConfig(namespace, ideConfigName, packageType, ideConfigSpec);
             return new ResponseEntity<>("IdeConfig created successfully.", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

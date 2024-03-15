@@ -25,10 +25,7 @@ import io.fabric8.kubernetes.client.dsl.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 
 @Service
@@ -43,7 +40,7 @@ public class IdeConfigService {
         this.client = client;
     }
 
-    public IdeConfig createIdeConfig(String namespace, String ideConfigName, IdeConfigSpec ideConfigSpec) {
+    public IdeConfig createIdeConfig(String namespace, String ideConfigName, String packageType, IdeConfigSpec ideConfigSpec) {
         log.info("Creating IdeConfig: " + ideConfigSpec.toString());
         NonNamespaceOperation<IdeConfig, IdeConfigList, Resource<IdeConfig>> ideConfigs =
                 client.resources(IdeConfig.class, IdeConfigList.class).inNamespace(namespace);
@@ -61,6 +58,7 @@ public class IdeConfigService {
                 });
 
         IdeConfig ideConfig = new IdeConfig(ideConfigName, ideConfigSpec);
+        ideConfig.getMetadata().setAnnotations(Map.of("packageType.cloriver.io/vscode", packageType));
         if (!hasNullField) {
             ideConfigs.resource(ideConfig).create();
         } else {
