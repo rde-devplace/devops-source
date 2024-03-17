@@ -20,6 +20,12 @@ import com.mibottle.ideoperators.customresource.IdeConfigSpec;
 import com.mibottle.ideoperators.model.IdeCommon;
 import com.mibottle.ideoperators.service.IdeConfigService;
 import com.mibottle.ideoperators.util.SVCPathGenerator;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Tag(name = "IdeOperator API", description = "Operator에 직접 API 호출을 위한 기능")
 @Slf4j
 @RestController
 @RequestMapping("/api/ide-configs")
@@ -45,12 +52,16 @@ public class IdeConfigController {
      * @param ideConfigSpec IdeConfigSpec 객체
      * @return ResponseEntity
      */
+    @Operation(summary = "새로운 IdeConfig 생성", description = "지정된 세부 사항으로 새로운 IdeConfig를 생성합니다.", responses = {
+            @ApiResponse(description = "IdeConfig이(가) 성공적으로 생성되었습니다.", responseCode = "200", content = @Content(schema = @Schema(implementation = String.class))),
+            @ApiResponse(description = "내부 서버 오류", responseCode = "500", content = @Content)
+    })
     @PostMapping("/custom-resource")
     public ResponseEntity<String> createIdeConfig(
-            @RequestParam String name,
-            @RequestParam String namespace,
-            @RequestParam(required = false, defaultValue = "basic") String packageType,
-            @RequestBody IdeConfigSpec ideConfigSpec) {
+            @Parameter(description = "IdeConfig의 이름") @RequestParam String name,
+            @Parameter(description = "IdeConfig가 생성될 네임스페이스") @RequestParam String namespace,
+            @Parameter(description = "패키지 유형, 제공되지 않으면 'basic'으로 기본 설정됨") @RequestParam(required = false, defaultValue = "basic") String packageType,
+            @Parameter(description = "IdeConfig의 사양") @RequestBody IdeConfigSpec ideConfigSpec) {
         String ideConfigName = name;
         try {
             log.info("Controller createIdeConfig(): " + ideConfigSpec.toString());
@@ -73,8 +84,14 @@ public class IdeConfigController {
      * @param namespace IdeConfig가 생성된 namespace
      * @return
      */
+    @Operation(summary = "IdeConfig 삭제", description = "지정된 이름과 네임스페이스를 기반으로 기존 IdeConfig를 삭제합니다.", responses = {
+            @ApiResponse(description = "IdeConfig이(가) 성공적으로 삭제되었습니다.", responseCode = "200"),
+            @ApiResponse(description = "내부 서버 오류", responseCode = "500")
+    })
     @DeleteMapping("/custom-resource")
-    public ResponseEntity<String> deleteIdeConfig(@RequestParam String name, @RequestParam String namespace) {
+    public ResponseEntity<String> deleteIdeConfig(
+            @Parameter(description = "삭제할 IdeConfig의 이름") @RequestParam String name,
+            @Parameter(description = "IdeConfig가 생성된 네임스페이스") @RequestParam String namespace) {
         String ideConfigName = name;
         try {
             ideConfigService.deleteIdeConfig(namespace, ideConfigName);
@@ -91,11 +108,16 @@ public class IdeConfigController {
      * @param name IdeConfig의 이름
      * @return
      */
+    @Operation(summary = "IdeConfigs 조회", description = "지정된 네임스페이스 내의 모든 IdeConfigs를 검색합니다. 이름이 제공되면 해당 이름의 IdeConfig를 반환합니다.", responses = {
+            @ApiResponse(description = "IdeConfigs 검색 성공", responseCode = "200"),
+            @ApiResponse(description = "찾을 수 없음", responseCode = "404"),
+            @ApiResponse(description = "내부 서버 오류", responseCode = "500")
+    })
     @GetMapping("/custom-resource")
     public ResponseEntity<?> getIdeConfigs(
-            @RequestParam String namespace,
-            @RequestParam(required = false) String name
-) {
+            @Parameter(description = "IdeConfigs의 네임스페이스") @RequestParam String namespace,
+            @Parameter(description = "IdeConfig의 이름, 선택사항") @RequestParam(required = false) String name
+    ) {
         String ideConfigName = name;
         try {
             if (ideConfigName != null && !ideConfigName.isEmpty()) {
@@ -130,12 +152,16 @@ public class IdeConfigController {
      * @param appName 동일 workspace 내에 두 개 이상의 RDE 생성 시 구분할 수 있는 이름
      * @return
      */
+    @Operation(summary = "사용자별 IdeConfig 목록 조회", description = "지정된 네임스페이스에 있는, 지정된 사용자가 생성한 IdeConfigs를 검색합니다. workspaceName과 appName으로 필터링할 수 있습니다.", responses = {
+            @ApiResponse(description = "IdeConfigs 검색 성공", responseCode = "200"),
+            @ApiResponse(description = "내부 서버 오류", responseCode = "500")
+    })
     @GetMapping("/custom-resource/user")
     public ResponseEntity<?> getIdeConfigListWithUser(
-            @RequestParam String namespace,
-            @RequestParam String userName,
-            @RequestParam(required = false) String workspaceName,
-            @RequestParam(required = false) String appName) {
+            @Parameter(description = "IdeConfigs의 네임스페이스") @RequestParam String namespace,
+            @Parameter(description = "RDE를 생성하고 사용할 권한이 있는 사용자 계정") @RequestParam String userName,
+            @Parameter(description = "workspace의 이름, 선택사항") @RequestParam(required = false) String workspaceName,
+            @Parameter(description = "동일 workspace 내 여러 RDE를 구분하기 위한 이름, 선택사항") @RequestParam(required = false) String appName) {
         try {
             log.debug("Controller getIdeConfigs(): Fetching IdeConfigs in namespace: " + namespace);
             List<IdeConfig> ideConfigs = ideConfigService.getIdeConfigs(namespace, userName, workspaceName, appName);
@@ -153,8 +179,14 @@ public class IdeConfigController {
      * @param name IdeConfig의 이름
      * @return IdeConfigSpec
      */
+    @Operation(summary = "지정된 이름의 IdeConfigSpec 조회", description = "주어진 네임스페이스에서 지정된 IdeConfig 이름의 IdeConfigSpec를 검색합니다.", responses = {
+            @ApiResponse(description = "IdeConfigSpec 검색 성공", responseCode = "200"),
+            @ApiResponse(description = "내부 서버 오류", responseCode = "500")
+    })
     @GetMapping("/custom-resource/spec")
-    public ResponseEntity<?> getIdeConfigSpec(@RequestParam String namespace, @RequestParam String name) {
+    public ResponseEntity<?> getIdeConfigSpec(
+            @Parameter(description = "IdeConfig의 네임스페이스") @RequestParam String namespace,
+            @Parameter(description = "IdeConfig의 이름") @RequestParam String name) {
         String ideConfigName = name;
         try {
             log.debug("Controller getIdeConfigSpec(): Fetching IdeConfigSpec with name: " + name + " in namespace: " + namespace);
@@ -174,11 +206,15 @@ public class IdeConfigController {
      * @param ideConfigSpec IdeConfigSpec 객체
      * @return ResponseEntity
      */
+    @Operation(summary = "IdeConfig 업데이트", description = "지정된 이름과 네임스페이스를 가진 IdeConfig를 업데이트합니다.", responses = {
+            @ApiResponse(description = "IdeConfig이(가) 성공적으로 업데이트되었습니다.", responseCode = "200"),
+            @ApiResponse(description = "내부 서버 오류", responseCode = "500")
+    })
     @PutMapping("/custom-resource")
     public ResponseEntity<String> updateIdeConfig(
-            @RequestParam String name,
-            @RequestParam String namespace,
-            @RequestBody IdeConfigSpec ideConfigSpec) {
+            @Parameter(description = "업데이트할 IdeConfig의 이름") @RequestParam String name,
+            @Parameter(description = "IdeConfig가 생성된 네임스페이스") @RequestParam String namespace,
+            @Parameter(description = "IdeConfigSpec 객체") @RequestBody IdeConfigSpec ideConfigSpec) {
         String ideConfigName = name;
         try {
             log.info("Controller updateIdeConfig(): Updating IdeConfig with name: " + name + " in namespace: " + namespace);

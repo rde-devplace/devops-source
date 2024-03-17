@@ -14,7 +14,7 @@ spec:
         prometheus.io/scrape: 'true'
         prometheus.io/port: '8081'
         prometheus.io/path: '/actuator/prometheus'
-        update: 90d7fb9657ecd3bf9396eb209a76882c
+        update: 317f6a31324e1a1bb5e564b91deb7bd4
       labels:
         app: ide-operator
     spec:
@@ -36,7 +36,7 @@ spec:
         - name: USER_STORAGE_CLASS_NAME
           value: "gp2"
         - name: VSCODE_IMAGE_PATH
-          value: "amdp-registry.skamdp.org/mydev-ywyi/devplace-vscode-server:2.4220"
+          value: "amdp-registry.skamdp.org/mydev-ywyi/devplace-vscode-server:2.1.4220"
         - name: SSHSERVER_IMAGE_PATH
           value: "amdp-registry.skamdp.org/mydev-ywyi/ssh-with-k9s-extend:1.0.1"
         - name: WETTY_IMAGE_PATH

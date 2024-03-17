@@ -253,11 +253,11 @@ public class IdeResourceService {
         // StatefulSet 생성
         try {
             log.info("Creating or replacing StatefulSet: " + statefulSet.getMetadata().getName() + " in namespace: " + namespace);
-            //StatefulSet currentStatefulset = client.apps().statefulSets().inNamespace(namespace).withName(statefulSetName).get();
+            StatefulSet currentStatefulset = client.apps().statefulSets().inNamespace(namespace).withName(statefulSetName).get();
             // Statefulset 현재 spec과 다를 경우에만 apply 적용
-            //if (! currentStatefulset.getSpec().equals(statefulSet.getSpec())) {
+            if (currentStatefulset == null || !currentStatefulset.getSpec().equals(statefulSet.getSpec())) {
                 client.apps().statefulSets().inNamespace(namespace).resource(statefulSet).serverSideApply();
-            //}
+            }
         } catch (KubernetesClientException e) {
             log.error("Failed to create or replace Service: " + e.getMessage());
             // 적절한 예외 처리 로직
@@ -276,11 +276,11 @@ public class IdeResourceService {
             log.info("Creating or replacing Service: " + service.getMetadata().getName() + " in namespace: " + namespace);
 
             // currentService를 가져온다
-            //io.fabric8.kubernetes.api.model.Service currentService = client.services().inNamespace(namespace).withName(serviceName).get();
+            io.fabric8.kubernetes.api.model.Service currentService = client.services().inNamespace(namespace).withName(serviceName).get();
             // Service 현재 spec과 다를 경우에만 apply 적용
-            //if (!currentService.getSpec().equals(service.getSpec())) {
+            if (currentService == null || !currentService.getSpec().equals(service.getSpec())) {
                 client.services().inNamespace(namespace).resource(service).serverSideApply();
-            //}
+            }
         } catch (KubernetesClientException e) {
             log.error("Failed to create or replace Service: " + e.getMessage());
             // 적절한 예외 처리 로직

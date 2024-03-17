@@ -107,6 +107,7 @@ public class VscodeConfigReconciler
 
     }
 
+
     /**
      * 이 메소드는 주어진 IdeConfig 리소스에 대한 조정 로직을 수행합니다.
      * VS Code 서버에 대한 StatefulSet과 Service를 생성하거나 업데이트합니다.
@@ -127,6 +128,11 @@ public class VscodeConfigReconciler
             return UpdateControl.noUpdate();
         }
          */
+
+        // 과거 버전에 대한 기능 동작 방지
+        if(resource.getMetadata().getName().endsWith("-vscode-server")) {
+            return UpdateControl.noUpdate();
+        }
 
         String namespace = resource.getMetadata().getNamespace();
         IdeConfigSpec spec = resource.getSpec();

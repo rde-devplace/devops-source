@@ -29,4 +29,5 @@ com/mibottle/ideoperators/customresource/IdeConfigSpec.class
 com/mibottle/ideoperators/util/SVCPathGenerator.class
 com/mibottle/ideoperators/IdeOperatorApplication.class
 com/mibottle/ideoperators/customresource/Permission.class
+com/mibottle/ideoperators/config/SwaggerConfig.class
 com/mibottle/ideoperators/model/IdeRoleType.class
