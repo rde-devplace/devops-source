@@ -60,7 +60,7 @@ public class IdeConfigController {
     public ResponseEntity<String> createIdeConfig(
             @Parameter(description = "IdeConfig의 이름") @RequestParam String name,
             @Parameter(description = "IdeConfig가 생성될 네임스페이스") @RequestParam String namespace,
-            @Parameter(description = "패키지 유형, 제공되지 않으면 'basic'으로 기본 설정됨") @RequestParam(required = false, defaultValue = "basic") String packageType,
+            @Parameter(description = "패키지 유형, 제공되지 않으면 'basic'으로 기본 설정됨 (basic, ai, extensions)") @RequestParam(required = false, defaultValue = "basic") String packageType,
             @Parameter(description = "IdeConfig의 사양") @RequestBody IdeConfigSpec ideConfigSpec) {
         String ideConfigName = name;
         try {

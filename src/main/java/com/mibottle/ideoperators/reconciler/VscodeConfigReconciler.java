@@ -87,6 +87,9 @@ public class VscodeConfigReconciler
     @Value("${ide.user.storageClassName}")
     private String storageClassNameForUser;
 
+    @Value("${ide.ide-proxy-domain:kube-proxy.amdp-dev.skamdp.org}")
+    private String ideProxyDomain;
+
     public VscodeConfigReconciler(KubernetesClient client, IdeResourceGenerator ideResourceGenerator) {
         this.client = client;
         this.ideResourceGenerator = ideResourceGenerator;
@@ -175,7 +178,7 @@ public class VscodeConfigReconciler
                             "vscodeserver",
                             vscodeImage,
                             IdeCommon.VSCODE_PORT,
-                            isVscode, isGit));
+                            isVscode, isGit, ideProxyDomain));
                     break;
                     // WebSSH 컨테이너 생성
                 case "webssh":

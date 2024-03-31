@@ -91,7 +91,7 @@ class JoperatorApplicationTestsBK {
         Boolean isGit = ideConfig.getSpec().getVscode() != null;
         IdeResourceGenerator realIdeResourceGenerator = new IdeResourceGenerator();
         List<Container> containers = new ArrayList<Container>();
-        containers.add(realIdeResourceGenerator.vscodeServerContainer(ideConfig, "vscodeserver", "vscode-server:1.0", 8443, isVscode, isGit));
+        containers.add(realIdeResourceGenerator.vscodeServerContainer(ideConfig, "vscodeserver", "vscode-server:1.0", 8443, isVscode, isGit, "kube-proxy.amdp-dev.skamdp.org"));
         containers.add(realIdeResourceGenerator.sshServerContainer(ideConfig, "sshserver", "ssh-server:1.0", 2222, isVscode, isGit));
         containers.add(realIdeResourceGenerator.wettyContainer(ideConfig, "wetty", "vscode-server:1.0", "/" + ideConfig.getSpec().getUserName() + "/cli/wetty", 3000));
 

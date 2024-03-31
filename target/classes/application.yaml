@@ -12,17 +12,18 @@ spring:
 
 springdoc:
   api-docs:
-    path: /api-docs
+    path: /api/ide-configs/api-docs
     title: Devplace manager API
     description: This Application create and manage ide config.
   swagger-ui:
-    path: /swagger-ui.html
+    path: /api/ide-configs/swagger-ui.html
 ---
 spring:
   config:
     activate:
       on-profile: local
 ide:
+  ide-proxy-domain: "kube-proxy.amdp-dev.skamdp.org"
   comdev:
     pvcName: com-dev-pvc
   user:
@@ -47,6 +48,7 @@ spring:
 server:
   port: 8080
 ide:
+  ide-proxy-domain: ${IDE_PROXY_DOMAIN}
   comdev:
     pvcName: ${COMDEV_PVC_NAME}
   user:

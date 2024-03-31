@@ -131,7 +131,7 @@ class JoperatorApplicationTests {
             switch(serviceType) {
                 // VS Code 서버 컨테이너 생성
                 case "vscode":
-                    containers.add(ideResourceGenerator.vscodeServerContainer(resource, "vscodeserver", vscodeImage, 8443, isVscode, isGit));
+                    containers.add(ideResourceGenerator.vscodeServerContainer(resource, "vscodeserver", vscodeImage, 8443, isVscode, isGit, "kube-proxy.amdp-dev.skamdp.org"));
                     break;
                 // WebSSH 컨테이너 생성
                 case "webssh":

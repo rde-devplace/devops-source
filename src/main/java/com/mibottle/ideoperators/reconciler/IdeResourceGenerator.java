@@ -25,6 +25,7 @@ import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetBuilder;
 import io.fabric8.kubernetes.api.model.rbac.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -113,13 +114,14 @@ public class IdeResourceGenerator {
                 .withReplicas(spec.getReplicas())
                 .withNewSelector()
                 .addToMatchLabels(IdeCommon.OPERATOR_LABEL_KEY, IdeCommon.OPERATOR_LABEL_VALUE)
+                .addToMatchLabels(IdeCommon.OPERATOR_TYPE_LABEL_KEY, IdeCommon.OPERATOR_TYPE_LABEL_VALUE)
                 .addToMatchLabels("app", labelName)
                 .endSelector()
                 // ... 기타 필요한 설 정
                 .withServiceName(serviceName)
                 .withNewTemplate()
                 .withNewMetadata()
-                .withLabels(Map.of("app", labelName, IdeCommon.OPERATOR_LABEL_KEY, IdeCommon.OPERATOR_LABEL_VALUE))
+                .withLabels(Map.of("app", labelName, IdeCommon.OPERATOR_LABEL_KEY, IdeCommon.OPERATOR_LABEL_VALUE, IdeCommon.OPERATOR_TYPE_LABEL_KEY, IdeCommon.OPERATOR_TYPE_LABEL_VALUE))
                 //.withAnnotations(Map.of("update", HashUtil.generateSHA256Hash(spec)))
                 .endMetadata()
                 //--- Container Spec 설정
@@ -204,7 +206,7 @@ public class IdeResourceGenerator {
      * @param port 컨테이너 포트
      * @return 생성된 Container 객체
      */
-    public Container vscodeServerContainer(IdeConfig resource, String containerName, String image, Integer port, Boolean isVscode, Boolean isGit) {
+    public Container vscodeServerContainer(IdeConfig resource, String containerName, String image, Integer port, Boolean isVscode, Boolean isGit, String ideProxyDomain) {
         IdeConfigSpec spec = resource.getSpec();
 
         ContainerBuilder containerBuilder = new ContainerBuilder()
@@ -251,6 +253,19 @@ public class IdeResourceGenerator {
             containerBuilder.addNewEnv()
                     .withName("PACKAGETYPE")
                     .withValue(packageType)
+                    .endEnv();
+        }
+        String domainProxy = resource.getMetadata().getAnnotations().get(IdeCommon.PROXY_DOMAIN);
+        String svcName = SVCPathGenerator.generateName(spec);
+        if(domainProxy != null) {
+            containerBuilder.addNewEnv()
+                    .withName("VSCODE_PROXY_URI")
+                    .withValue("https://" + svcName + "p" + "{{port}}." + domainProxy)
+                    .endEnv();
+        } else {
+            containerBuilder.addNewEnv()
+                    .withName("VSCODE_PROXY_URI")
+                    .withValue("https://" + svcName + "p" + "{{port}}." + ideProxyDomain)
                     .endEnv();
         }
 
@@ -405,6 +420,14 @@ public class IdeResourceGenerator {
                 .withName("NOTEBOOK_PORT")
                 .withValue(IdeCommon.NOTEBOOK_PORT.toString())
                 .endEnv()
+                .addNewEnv()
+                .withName("STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION")  // XSRF 보호 기능 비활성화
+                .withValue("false")
+                .endEnv()
+                .addNewEnv()
+                .withName("STREAMLIT_SERVER_ENABLE_CORS") // CORS 비활성화
+                .withValue("false")
+                .endEnv()
         ;
 
         // ... Volume Mount 설정
@@ -445,10 +468,11 @@ public class IdeResourceGenerator {
                 .withName(serviceName)
                 .withAnnotations(Map.of(IdeCommon.IDECONFIG_GROUP, IdeCommon.IDECONFIG_CRD_PLURAL, "userName", resource.getSpec().getUserName()))
                 .addToLabels(IdeCommon.OPERATOR_LABEL_KEY, IdeCommon.OPERATOR_LABEL_VALUE)
+                .addToLabels(IdeCommon.OPERATOR_TYPE_LABEL_KEY, IdeCommon.OPERATOR_TYPE_LABEL_VALUE)
                 .addToLabels("app", labelName)
                 .endMetadata()
                 .withNewSpec()
-                .withSelector(Map.of("app", labelName, IdeCommon.OPERATOR_LABEL_KEY, IdeCommon.OPERATOR_LABEL_VALUE))
+                .withSelector(Map.of("app", labelName, IdeCommon.OPERATOR_LABEL_KEY, IdeCommon.OPERATOR_LABEL_VALUE, IdeCommon.OPERATOR_TYPE_LABEL_KEY, IdeCommon.OPERATOR_TYPE_LABEL_VALUE))
                 .withPorts(servicePorts)
                 .endSpec()
                 .build();
@@ -472,6 +496,7 @@ public class IdeResourceGenerator {
                 .withName(secretName)
                 .withAnnotations(Map.of(IdeCommon.IDECONFIG_GROUP, IdeCommon.IDECONFIG_CRD_PLURAL, "userName", resource.getSpec().getUserName()))
                 .addToLabels(IdeCommon.OPERATOR_LABEL_KEY, IdeCommon.OPERATOR_LABEL_VALUE)
+                .addToLabels(IdeCommon.OPERATOR_TYPE_LABEL_KEY, IdeCommon.OPERATOR_TYPE_LABEL_VALUE)
                 .addToLabels("app", labelName)
                 .endMetadata()
                 .withType("Opaque")
@@ -513,6 +538,7 @@ public class IdeResourceGenerator {
                 .withName(serviceAccountName)
                 .withAnnotations(Map.of(IdeCommon.IDECONFIG_GROUP, IdeCommon.IDECONFIG_CRD_PLURAL, "userName", resource.getSpec().getUserName()))
                 .addToLabels(IdeCommon.OPERATOR_LABEL_KEY, IdeCommon.OPERATOR_LABEL_VALUE)
+                .addToLabels(IdeCommon.OPERATOR_TYPE_LABEL_KEY, IdeCommon.OPERATOR_TYPE_LABEL_VALUE)
                 .addToLabels("app", labelName)
                 .endMetadata()
                 .build();
@@ -535,6 +561,7 @@ public class IdeResourceGenerator {
                 .withName(roleBindingName)
                 .withAnnotations(Map.of(IdeCommon.IDECONFIG_GROUP, IdeCommon.IDECONFIG_CRD_PLURAL, "userName", resource.getSpec().getUserName()))
                 .addToLabels(IdeCommon.OPERATOR_LABEL_KEY, IdeCommon.OPERATOR_LABEL_VALUE)
+                .addToLabels(IdeCommon.OPERATOR_TYPE_LABEL_KEY, IdeCommon.OPERATOR_TYPE_LABEL_VALUE)
                 .addToLabels("app", labelName)
                 .endMetadata()
                 .withNewRoleRef()
@@ -566,6 +593,7 @@ public class IdeResourceGenerator {
                 .withName(clusterRoleBindingName)
                 .withAnnotations(Map.of(IdeCommon.IDECONFIG_GROUP, IdeCommon.IDECONFIG_CRD_PLURAL, "userName", resource.getSpec().getUserName()))
                 .addToLabels(IdeCommon.OPERATOR_LABEL_KEY, IdeCommon.OPERATOR_LABEL_VALUE)
+                .addToLabels(IdeCommon.OPERATOR_TYPE_LABEL_KEY, IdeCommon.OPERATOR_TYPE_LABEL_VALUE)
                 .addToLabels("app", labelName)
                 .endMetadata()
                 .withNewRoleRef()

@@ -37,6 +37,9 @@ public final class IdeCommon {
     public static final String OPERATOR_LABEL_KEY = IDECONFIG_GROUP + "/ide-operator";
     public static final String OPERATOR_LABEL_VALUE = "v2";
 
+    public static final String OPERATOR_TYPE_LABEL_KEY = IDECONFIG_GROUP + "type";
+    public static final String OPERATOR_TYPE_LABEL_VALUE = "rde";
+
     public static final String IDECONFIG_CRD_NAME = "ideconfigs.amdev.cloriver.io";
     public static final String IDECONFIG_CRD_PLURAL = "ideconfigs";
 
@@ -48,7 +51,6 @@ public final class IdeCommon {
     public static final String GIT_REPOSITORY = "repository";
     public static final String GIT_BRANCH = "branch";
     public static final String SERVICE_ACCOUNT_NAME = "serviceAccountName";
-
 
     // PVC
     public static final String USER_DEV_STORAGE = "user-dev-storage";
@@ -63,6 +65,8 @@ public final class IdeCommon {
 
     // IDECONFIG Annotation defintion
     public static final String PACKAGE_TYPE = "packageType.cloriver.io/vscode";
+    public static final String PROXY_DOMAIN = "proxyDomain.cloriver.io/vscode";
+
 
 
     // SERVICE_TYPE
