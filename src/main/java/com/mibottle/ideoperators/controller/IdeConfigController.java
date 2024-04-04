@@ -61,6 +61,7 @@ public class IdeConfigController {
             @Parameter(description = "IdeConfig의 이름") @RequestParam String name,
             @Parameter(description = "IdeConfig가 생성될 네임스페이스") @RequestParam String namespace,
             @Parameter(description = "패키지 유형, 제공되지 않으면 'basic'으로 기본 설정됨 (basic, ai, extensions)") @RequestParam(required = false, defaultValue = "basic") String packageType,
+            @Parameter(description = "Proxy Domain 정보") @RequestParam(required = false, defaultValue = "env") String proxyDomain,
             @Parameter(description = "IdeConfig의 사양") @RequestBody IdeConfigSpec ideConfigSpec) {
         String ideConfigName = name;
         try {
@@ -71,7 +72,7 @@ public class IdeConfigController {
             if(ideConfigSpec.getAppName() == null) {
                 ideConfigSpec.setAppName("");
             }
-            ideConfigService.createIdeConfig(namespace, ideConfigName, packageType, ideConfigSpec);
+            ideConfigService.createIdeConfig(namespace, ideConfigName, packageType, proxyDomain, ideConfigSpec);
             return new ResponseEntity<>("IdeConfig created successfully.", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

@@ -23,6 +23,7 @@ import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -32,6 +33,9 @@ import java.util.*;
 @Slf4j
 public class IdeConfigService {
 
+    @Value("${ide.ide-proxy-domain}")
+    private String ideProxyDomain;
+
     private final KubernetesClient client;
 
     public static final class IdeConfigList extends DefaultKubernetesResourceList<IdeConfig> {
@@ -40,7 +44,7 @@ public class IdeConfigService {
         this.client = client;
     }
 
-    public IdeConfig createIdeConfig(String namespace, String ideConfigName, String packageType, IdeConfigSpec ideConfigSpec) {
+    public IdeConfig createIdeConfig(String namespace, String ideConfigName, String packageType, String proxyDomain, IdeConfigSpec ideConfigSpec) {
         log.info("Creating IdeConfig: " + ideConfigSpec.toString());
         NonNamespaceOperation<IdeConfig, IdeConfigList, Resource<IdeConfig>> ideConfigs =
                 client.resources(IdeConfig.class, IdeConfigList.class).inNamespace(namespace);
@@ -58,7 +62,8 @@ public class IdeConfigService {
                 });
 
         IdeConfig ideConfig = new IdeConfig(ideConfigName, ideConfigSpec);
-        ideConfig.getMetadata().setAnnotations(Map.of("packageType.cloriver.io/vscode", packageType));
+        if(proxyDomain.equals("env")) proxyDomain = ideProxyDomain;
+        ideConfig.getMetadata().setAnnotations(Map.of("packageType.cloriver.io/vscode", packageType, "proxyDomain.cloriver.io/vscode", proxyDomain));
         if (!hasNullField) {
             ideConfigs.resource(ideConfig).create();
         } else {

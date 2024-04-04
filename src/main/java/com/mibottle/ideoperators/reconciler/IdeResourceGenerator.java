@@ -109,6 +109,7 @@ public class IdeResourceGenerator {
                 .withNewMetadata()
                 .withName(statefulSetName)
                 .withAnnotations(Map.of(IdeCommon.IDECONFIG_GROUP, IdeCommon.IDECONFIG_CRD_PLURAL, "userName", resource.getSpec().getUserName()))
+                .withLabels(Map.of("app", labelName, IdeCommon.OPERATOR_LABEL_KEY, IdeCommon.OPERATOR_LABEL_VALUE, IdeCommon.OPERATOR_TYPE_LABEL_KEY, IdeCommon.OPERATOR_TYPE_LABEL_VALUE))
                 .endMetadata()
                 .withNewSpec()
                 .withReplicas(spec.getReplicas())
@@ -194,6 +195,7 @@ public class IdeResourceGenerator {
                     .endVolumeMount();
         }
 
+
                 return containerBuilder.build();
     }
 
@@ -213,6 +215,15 @@ public class IdeResourceGenerator {
                 .withName(containerName)
                 .withImage(image)
                 .withImagePullPolicy("Always")
+
+                // ... Resource 설정
+                .withResources(new ResourceRequirementsBuilder()
+                        .addToRequests("cpu", new Quantity(resource.getSpec().getInfrastructureSize().getCpu()))
+                        .addToRequests("memory", new Quantity(resource.getSpec().getInfrastructureSize().getMemory()))
+                        .addToLimits("cpu", new Quantity(resource.getSpec().getInfrastructureSize().getCpu()))
+                        .addToLimits("memory", new Quantity(resource.getSpec().getInfrastructureSize().getMemory()))
+                        .build())
+
                 .withPorts(new ContainerPortBuilder()
                         .withContainerPort(port)  //8443
                         .build())
@@ -397,6 +408,15 @@ public class IdeResourceGenerator {
                 .withName(containerName)
                 .withImage(image)
                 .withImagePullPolicy("Always")
+
+                // ... Resource 설정
+                .withResources(new ResourceRequirementsBuilder()
+                        .addToRequests("cpu", new Quantity(resource.getSpec().getInfrastructureSize().getCpu()))
+                        .addToRequests("memory", new Quantity(resource.getSpec().getInfrastructureSize().getMemory()))
+                        .addToLimits("cpu", new Quantity(resource.getSpec().getInfrastructureSize().getCpu()))
+                        .addToLimits("memory", new Quantity(resource.getSpec().getInfrastructureSize().getMemory()))
+                        .build())
+
                 // ... Port 설정
                 .withPorts(new ContainerPortBuilder()
                         .withContainerPort(port) //8888
