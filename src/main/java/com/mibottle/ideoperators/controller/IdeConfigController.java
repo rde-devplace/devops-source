@@ -20,6 +20,7 @@ import com.mibottle.ideoperators.customresource.IdeConfigSpec;
 import com.mibottle.ideoperators.model.IdeCommon;
 import com.mibottle.ideoperators.service.IdeConfigService;
 import com.mibottle.ideoperators.util.SVCPathGenerator;
+import io.fabric8.kubernetes.api.model.PodStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -97,6 +98,33 @@ public class IdeConfigController {
         try {
             ideConfigService.deleteIdeConfig(namespace, ideConfigName);
             return new ResponseEntity<>("IdeConfig deleted successfully.", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * RdeConfig PVC를 삭제한다.
+     * @param name RdeConfig의 이름
+     * @param namespace RdeConfig가 생성된 namespace
+     * @return
+     */
+    @Operation(summary = "RdeConfig PVC 삭제", description = "지정된 이름과 네임스페이스를 기반으로 기존 RdeConfig PVC를 삭제합니다.", responses = {
+            @ApiResponse(description = "RdeConfig PVC가 성공적으로 삭제되었습니다.", responseCode = "200"),
+            @ApiResponse(description = "내부 서버 오류", responseCode = "500")
+    })
+    @DeleteMapping("/custom-resource/pvc")
+    public ResponseEntity<String> deletePVC(
+            @Parameter(description = "삭제할 IdeConfig 이름") @RequestParam String name,
+            @Parameter(description = "IdeConfig가 생성된 네임스페이스") @RequestParam String namespace) {
+        String deletedPvcName = "user-dev-storage-" + name + "-rde-statefulset-0";
+        try {
+            log.info("Controller deletePVC(): Deleting PVC with name: " + deletedPvcName + " in namespace: " + namespace);
+            String pvcName = ideConfigService.deletePVC(namespace, deletedPvcName);
+            if(pvcName == null) {
+                return new ResponseEntity<>("PVC not found.", HttpStatus.NOT_FOUND);
+            }
+            return new ResponseEntity<>("PVC deleted successfully.", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -201,6 +229,32 @@ public class IdeConfigController {
     }
 
     /**
+     * 동일 namespace 내에 지정된 IdeConfig에 의해 생성되는 Statefulset Pod의 상태 값을 읽어간다.
+     * @param namespace
+     * @param name
+     * @return
+     */
+    @Operation(summary = "지정된 이름의 IdeConfigSpec 조회", description = "주어진 네임스페이스에서 지정된 IdeConfig 이름의 IdeConfigSpec를 검색합니다.", responses = {
+            @ApiResponse(description = "IdeConfigSpec 검색 성공", responseCode = "200"),
+            @ApiResponse(description = "내부 서버 오류", responseCode = "500")
+    })
+    @GetMapping("/custom-resource/pods")
+    public ResponseEntity<?> getPodStatus(
+            @Parameter(description = "IdeConfig의 네임스페이스") @RequestParam String namespace,
+            @Parameter(description = "IdeConfig의 이름") @RequestParam String name) {
+        String ideConfigName = name;
+        try {
+            log.debug("getPodStatus: " + name + " in namespace: " + namespace);
+            List<PodStatus> statusList = ideConfigService.getPodStatusInIdeConfig(namespace, ideConfigName);
+
+            return new ResponseEntity<>(statusList, HttpStatus.OK);
+        } catch (Exception e) {
+            log.error("Error fetching IdeConfigSpec", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
      * IdeConfig를 업데이트한다.
      * @param name IdeConfig의 이름
      * @param namespace IdeConfig가 생성된 namespace
@@ -219,6 +273,7 @@ public class IdeConfigController {
         String ideConfigName = name;
         try {
             log.info("Controller updateIdeConfig(): Updating IdeConfig with name: " + name + " in namespace: " + namespace);
+            log.info("Controller updateIdeConfig(): {}", ideConfigSpec.toString());
             ideConfigService.updateIdeConfig(namespace, ideConfigName, ideConfigSpec);
             return new ResponseEntity<>("IdeConfig updated successfully.", HttpStatus.OK);
         } catch (Exception e) {

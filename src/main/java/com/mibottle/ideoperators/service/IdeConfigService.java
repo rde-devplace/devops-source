@@ -17,7 +17,7 @@ package com.mibottle.ideoperators.service;
 
 import com.mibottle.ideoperators.customresource.IdeConfig;
 import com.mibottle.ideoperators.customresource.IdeConfigSpec;
-import io.fabric8.kubernetes.api.model.DefaultKubernetesResourceList;
+import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
@@ -88,6 +88,19 @@ public class IdeConfigService {
         return ideConfig;
     }
 
+    public String deletePVC(String namespace, String pvcName) {
+        List<StatusDetails> isDeleted = client.persistentVolumeClaims().inNamespace(namespace).withName(pvcName).delete();
+
+        if (isDeleted.isEmpty()) {
+            log.info("PVC not found: " + pvcName + " in namespace: " + namespace);
+            return null;
+        } else {
+            log.info("PVC deleted successfully: " + pvcName);
+        }
+
+        return pvcName;
+    }
+
     private List<IdeConfig> fetchIdeConfigs(String namespace) {
         NonNamespaceOperation<IdeConfig, IdeConfigList, Resource<IdeConfig>> ideConfigs =
                 client.resources(IdeConfig.class, IdeConfigList.class).inNamespace(namespace);
@@ -148,27 +161,6 @@ public class IdeConfigService {
         }
     }
 
-    /*
-    public List<IdeConfig> getIdeConfig(String namespace, String ideConfigName) {
-        List<IdeConfig> configs = fetchIdeConfigs(namespace);
-        List<IdeConfig> matchingConfig = new ArrayList<>();
-
-        if (configs.isEmpty()) {
-            log.info("No IdeConfigs found in namespace: " + namespace);
-        } else {
-            for (IdeConfig config : configs) {
-                if (config != null && ideConfigName.equals(config.getMetadata().getName())) {
-                    matchingConfig.add(config);
-                    log.info("Found matching IdeConfig: " + config.getMetadata());
-                }
-            }
-        }
-
-        return matchingConfig;
-    }
-
-     */
-
 
     // updateIdeConfig 메소드 추가
     public Optional<IdeConfig> updateIdeConfig(String namespace, String ideConfigName, IdeConfigSpec ideConfigSpec) {
@@ -218,7 +210,7 @@ public class IdeConfigService {
             existingSpec.setInfrastructureSize(newSpec.getInfrastructureSize());
         }
 
-        if(newSpec.getReplicas() > 0 ) {
+        if(newSpec.getReplicas() >= 0 ) {
             existingSpec.setReplicas(newSpec.getReplicas());
         }
 
@@ -226,6 +218,19 @@ public class IdeConfigService {
     }
 
 
+    public List<PodStatus> getPodStatusInIdeConfig(String namespace, String ideConfigName) {
+        List<PodStatus> podStatusList = new ArrayList<>();
+        String labelSelector = ideConfigName + "-rde";
+        client.pods().inNamespace(namespace).withLabel("app", labelSelector).list().getItems()
+                .forEach(pod -> {
+                    PodStatus podStatus = pod.getStatus();
+                    podStatusList.add(pod.getStatus());
+                    log.info("Pod status: " + podStatus);
+
+                });
+
+        return podStatusList;
+    }
 
     /*
 

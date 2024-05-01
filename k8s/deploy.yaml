@@ -1,29 +1,29 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ide-operator
+  name: ideconfig-operator
   namespace: part-rde
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ide-operator
+      app: ideconfig-operator
   template:
     metadata:
       annotations:
         prometheus.io/scrape: 'true'
         prometheus.io/port: '8081'
         prometheus.io/path: '/actuator/prometheus'
-        update: bb9cb846092fa42c802f1f55abe43e35
+        update: 86deb255238469195c34f980273b4386
       labels:
-        app: ide-operator
+        app: ideconfig-operator
     spec:
       serviceAccountName: cluster-admin-sa
       imagePullSecrets:
       - name: harbor-registry-secret
       containers:
-      - name: ide-operator
-        image: amdp-registry.skamdp.org/mydev-ywyi/ide-operator:2.0.0
+      - name: ideconfig-operator
+        image: amdp-registry.skamdp.org/mydev-ywyi/ideconfig-operator:IDE.1.1.4221
         imagePullPolicy: Always
         securityContext:
             runAsUser: 0
@@ -44,4 +44,6 @@ spec:
         - name: NOTEBOOK_IMAGE_PATH
           value: "amdp-registry.skamdp.org/mydev-ywyi/devplace-notebook:1.0.10"
         - name: IDE_PROXY_DOMAIN
-          value: "kube-proxy.admp-dev.skamdp.org"
+          value: "kube-proxy.amdp-dev.skamdp.org"
+        - name: APP_DOMAIN_TYPE
+          value: subdomain

@@ -45,3 +45,5 @@ spec:
           value: "${DOCKER_REGISTRY}/devplace-notebook:1.0.10"
         - name: IDE_PROXY_DOMAIN
           value: "${IDE_PROXY_DOMAIN}"
+        - name: APP_DOMAIN_TYPE
+          value: ${APP_DOMAIN_TYPE}

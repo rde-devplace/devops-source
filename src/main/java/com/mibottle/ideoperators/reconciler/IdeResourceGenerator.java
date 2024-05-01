@@ -25,12 +25,14 @@ import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apps.StatefulSet;
 import io.fabric8.kubernetes.api.model.apps.StatefulSetBuilder;
 import io.fabric8.kubernetes.api.model.rbac.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 /**
  * ResourceGenerator는 Kubernetes 내에서 IDE 관련 리소스를 생성하고 관리하는 클래스입니다.
@@ -208,7 +210,7 @@ public class IdeResourceGenerator {
      * @param port 컨테이너 포트
      * @return 생성된 Container 객체
      */
-    public Container vscodeServerContainer(IdeConfig resource, String containerName, String image, Integer port, Boolean isVscode, Boolean isGit, String ideProxyDomain) {
+    public Container vscodeServerContainer(IdeConfig resource, String containerName, String image, Integer port, Boolean isVscode, Boolean isGit, String ideProxyDomain, String appDomainType) {
         IdeConfigSpec spec = resource.getSpec();
 
         ContainerBuilder containerBuilder = new ContainerBuilder()
@@ -268,12 +270,18 @@ public class IdeResourceGenerator {
         }
         String domainProxy = resource.getMetadata().getAnnotations().get(IdeCommon.PROXY_DOMAIN);
         String svcName = SVCPathGenerator.generateName(spec);
-        if(domainProxy != null) {
+
+        // IDE Proxy Domain이 없는 경우에는 ideProxyDomain을 사용한다.
+        if (domainProxy == null) domainProxy = ideProxyDomain;
+        // IDE Proxy Domain이 path인 경우에는 App Path는 /himan10/8501 처럼 Path 사용
+        if(appDomainType.equals("path")) {
+            log.debug("vscodeServerContainer appDomainType: {}", appDomainType);
             containerBuilder.addNewEnv()
                     .withName("VSCODE_PROXY_URI")
-                    .withValue("https://" + svcName + "p" + "{{port}}." + domainProxy)
+                    .withValue("https://" + domainProxy +"/" + svcName + "/" + "{{port}}")
                     .endEnv();
         } else {
+            log.debug("vscodeServerContainer appDomainType: {}", appDomainType);
             containerBuilder.addNewEnv()
                     .withName("VSCODE_PROXY_URI")
                     .withValue("https://" + svcName + "p" + "{{port}}." + ideProxyDomain)

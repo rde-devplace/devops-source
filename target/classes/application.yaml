@@ -49,6 +49,7 @@ server:
   port: 8080
 ide:
   ide-proxy-domain: ${IDE_PROXY_DOMAIN}
+  app-domain-type: ${APP_DOMAIN_TYPE}
   comdev:
     pvcName: ${COMDEV_PVC_NAME}
   user:
