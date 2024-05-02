@@ -274,17 +274,16 @@ public class IdeResourceGenerator {
         // IDE Proxy Domain이 없는 경우에는 ideProxyDomain을 사용한다.
         if (domainProxy == null) domainProxy = ideProxyDomain;
         // IDE Proxy Domain이 path인 경우에는 App Path는 /himan10/8501 처럼 Path 사용
+        log.debug("vscodeServerContainer appDomainType: {}", appDomainType);
         if(appDomainType.equals("path")) {
-            log.debug("vscodeServerContainer appDomainType: {}", appDomainType);
             containerBuilder.addNewEnv()
                     .withName("VSCODE_PROXY_URI")
                     .withValue("https://" + domainProxy +"/" + svcName + "/" + "{{port}}")
                     .endEnv();
         } else {
-            log.debug("vscodeServerContainer appDomainType: {}", appDomainType);
             containerBuilder.addNewEnv()
                     .withName("VSCODE_PROXY_URI")
-                    .withValue("https://" + svcName + "p" + "{{port}}." + ideProxyDomain)
+                    .withValue("https://" + svcName + "p" + "{{port}}." + domainProxy)
                     .endEnv();
         }
 
