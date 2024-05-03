@@ -23,11 +23,16 @@ public class SVCPathGenerator {
         }
     }
 
+
     public static String generateName(IdeConfigSpec spec) {
         String userName = spec.getUserName();
         String wsName = spec.getWsName();
         String appName = spec.getAppName();
 
+        return generateName(userName, wsName, appName);
+    }
+
+    public static String generateName(String userName, String wsName, String appName) {
         if (wsName == null || wsName.isEmpty()) {
             if (appName == null || appName.isEmpty()) {
                 return userName;
@@ -42,4 +47,5 @@ public class SVCPathGenerator {
             }
         }
     }
+
 }
