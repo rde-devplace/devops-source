@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+  namespace: skala-practice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '8081'
+        prometheus.io/path: '/actuator/prometheus'
+        update: 0022b4527ab14cda05f291be833cc65d
+      labels:
+        app: my-app
+    spec:
+      serviceAccountName: default
+      containers:
+      - name: my-app
+        image: amdp-registry.skala-ai.com/skala25a/sk000-my-app:1.0.0
+        imagePullPolicy: Always

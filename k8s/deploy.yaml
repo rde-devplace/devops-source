@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sk000-my-app
+  namespace: skala-practice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sk000-my-app
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '8081'
+        prometheus.io/path: '/actuator/prometheus'
+        update: efcd8545e70a3070fff7152dcbde3a17
+      labels:
+        app: sk000-my-app
+    spec:
+      serviceAccountName: default
+      containers:
+      - name: my-app
+        image: amdp-registry.skala-ai.com/skala25a/sk000-my-app:1.0.kaniko-docker-15-7165c3412340
+        imagePullPolicy: Always
+        env:
+        - name: LOGGING_LEVEL
+          value: DEBUG
+        - name: USER_NAME
+          value: sk000
+        - name: NAMESPACE
+          value: skala-practice

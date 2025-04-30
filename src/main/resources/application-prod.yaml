@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:mariadb//mariadb.skala-env:3306/CLOUD
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: cloud
+    password: Skala25a!23$
+
+  jpa:
+    database-platform: org.hibernate.dialect.MariaDBDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
