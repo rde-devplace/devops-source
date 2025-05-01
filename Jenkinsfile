@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     environment {
-        GIT_URL = 'https://github.com/himang10/tekton-source.git'
-        GIT_BRANCH = 'master' // 또는 master
+        GIT_URL = 'https://github.com/rde-devplace/devops-source.git'
+        GIT_BRANCH = 'main' // 또는 master
         GIT_ID = 'skala-github-id' // GitHub PAT credential ID
         IMAGE_REGISTRY = 'amdp-registry.skala-ai.com/skala25a'
-        IMAGE_NAME = 'sk000-my-app'
+        IMAGE_NAME = 'sk099-my-app'
         IMAGE_TAG = '1.0.0'
         DOCKER_CREDENTIAL_ID = 'skala-image-registry-id'  // Harbor 인증 정보 ID
     }
@@ -40,8 +40,9 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 sh '''
+                    sed -i 's/sk000-my-app/sk099-my-app/g' ./k8s/*.yaml
                     kubectl apply -f ./k8s
-                    kubectl rollout status deployment/sk000-my-app
+                    kubectl rollout status deployment/sk099-my-app
                 '''
             }
         }

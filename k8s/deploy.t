@@ -30,3 +30,18 @@ spec:
           value: ${USER_NAME}
         - name: NAMESPACE
           value: ${NAMESPACE}
+        - name: SPRING_PROFILES_ACTIVE
+          value: ${PROFILE}
+        - name: SPRING_DATASOURCE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ${USER_NAME}-${SERVICE_NAME}-config
+              key: SPRING_DATASOURCE_URL
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: ${USER_NAME}-${SERVICE_NAME}-config
+              key: SPRING_DATASOURCE_USERNAME
+        envFrom:
+        - secretRef:
+            name: ${USER_NAME}-${SERVICE_NAME}-secrets

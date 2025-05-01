@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-app
-  namespace: skala-practice
 spec:
   replicas: 1
   selector:
@@ -10,16 +9,32 @@ spec:
       app: my-app
   template:
     metadata:
+      labels:
+        app: my-app
       annotations:
         prometheus.io/scrape: 'true'
         prometheus.io/port: '8081'
         prometheus.io/path: '/actuator/prometheus'
-        update: 0022b4527ab14cda05f291be833cc65d
-      labels:
-        app: my-app
     spec:
-      serviceAccountName: default
       containers:
       - name: my-app
-        image: amdp-registry.skala-ai.com/skala25a/sk000-my-app:1.0.0
-        imagePullPolicy: Always
+        image: amdp-registry.skala-ai.com/skala25a/sk000-my-app:1.0
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: prod
+        # ConfigMap에서 값 가져오기
+        - name: SPRING_DATASOURCE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: my-app-config
+              key: SPRING_DATASOURCE_URL
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: my-app-config
+              key: SPRING_DATASOURCE_USERNAME
+        # Secret에서 값 가져오기
+        envFrom:
+        - secretRef:
+            name: my-app-secrets

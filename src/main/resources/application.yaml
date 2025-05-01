@@ -1,6 +1,3 @@
-server:
-  port: 8080
-
 spring:
   profiles:
     active: local # 기본 활성화 프로파일 설정
@@ -21,8 +18,8 @@ management:
 
 logging:
   level:
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    '[org.hibernate.SQL]': DEBUG
+    '[org.hibernate.type.descriptor.sql.BasicBinder]': TRACE
 
 springdoc:
   swagger-ui:

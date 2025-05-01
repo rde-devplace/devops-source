@@ -11,6 +11,7 @@ labels:
   - pairs:
       app.kubernetes.io/managed-by: kustomize
       env: dev
+      app: sk000-my-app
 
 commonAnnotations:
   contact: "himang10@sk.com"
@@ -36,6 +37,15 @@ patches:        # base 이름 기준
     target:
       kind: Deployment
       name: my-app     # base 이름 기준
+  # ConfigMap과 Secret 패치 추가
+  - path: patch-configmap.yaml
+    target:
+      kind: ConfigMap
+      name: my-app-config
+  - path: patch-secret.yaml
+    target:
+      kind: Secret
+      name: my-app-secrets
 images:
   - name: amdp-registry.skala-ai.com/skala25a/sk000-my-app
-    newTag: 1.0.kaniko-docker   # 2.0.0 --> 1.0.kaniko-docker
+    newTag: 1.0.0   # 새로운 버전으로 변경
