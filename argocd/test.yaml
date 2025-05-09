@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    contact: himang10@sk.com
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    argocd.argoproj.io/instance: sk000-my-app-kustomize
+    env: dev
+  name: sk000-my-app
+  namespace: skala-practice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sk000-my-app
+  template:
+    metadata:
+      annotations:
+        contact: himang10@sk.com
+        prometheus.io/path: /actuator/prometheus
+        prometheus.io/port: '8081'
+        prometheus.io/scrape: 'true'
+        update: 0022b4527ab14cda05f291be833cc65d
+      labels:
+        app: sk000-my-app
+    spec:
+      containers:
+        - env:
+            - name: USER_NAME
+              value: sk000
+          name: sk000-my-app
+        - image: 'amdp-registry.skala-ai.com/skala25a/sk000-my-app:1.0.kaniko-docker'
+          imagePullPolicy: Always
+          name: my-app
+      serviceAccountName: default
+

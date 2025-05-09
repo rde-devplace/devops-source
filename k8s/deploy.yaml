@@ -14,7 +14,7 @@ spec:
         prometheus.io/scrape: 'true'
         prometheus.io/port: '8081'
         prometheus.io/path: '/actuator/prometheus'
-        update: 10ce9c48ea6715a43a91d7e7990e9e30
+        update: 8bd4254ca0dc36121fbddb0b0fe5263a
       labels:
         app: sk000-my-app
     spec:
